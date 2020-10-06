@@ -3,6 +3,7 @@ import sys
 import math
 import random
 
+
 import os.path
 from os import path
 
@@ -11,7 +12,9 @@ pygame.init()
 from pygame.locals import *
 
 MenuFont = pygame.font.SysFont("Arial", 18)
+MenuFont_heading = pygame.font.SysFont("Arial", 30)
 WelcomeFont = pygame.font.SysFont("Arial", 40)
+
 
 red = (255,0,0)
 green = (0,255,0)
@@ -25,83 +28,147 @@ grey_lines = (102,102,102)
 green_field =(0, 128, 43)
 yellow_item_selected = (255, 255, 153)
 
-menu_line_spacing = 20
-heading_shift = 30
 
 
-def choose_menu_from_selection(The_game_window,The_field,selection):
 
-    draw_menu_lines(The_game_window,The_field)
+# --------------------------MENU-----------------------
+def draw_main_menu(The_game_window):
 
-    if selection == 'A':
-         draw_main_menu(The_game_window,menu_line_spacing,heading_shift)
-    elif selection == 'AA':
-        draw_AA_menu(The_game_window,menu_line_spacing,heading_shift)
-    elif selection == 'AB':
-        draw_AB_menu(The_game_window,menu_line_spacing,heading_shift)
-    elif selection == 'AC':
-        draw_AC_menu(The_game_window,menu_line_spacing,heading_shift)
-    elif selection == 'AD':
-        draw_AD_menu(The_game_window,menu_line_spacing,heading_shift)
-    elif selection == 'AE':
-        draw_AE_menu(The_game_window,menu_line_spacing,heading_shift)
+    if The_game_window.language == "CZ":
+        menu_list = ["START TEST GAME " ,"PAUSE TEST GAME","RESET TEST GAME","ULOZ input DATA","----------------------","TRENER", "  -Team management"  , "  -Stats"  ,"  -Trening  " , \
+                    "ROZHODCI ",  "  -Delka utkani", "  -Potvrdit teamy ", "  -Nastaveni hriste ","  -Novy zapas", "  -pcXpc","  -pcXuzivatel" , \
+                    "NASTAVENI ","  -Jazyk / Language", "  -Velikost okna",\
+                    "LAB ", "  -zapnout lab mod","  -vypnout grafiku" , \
+                    "NAPOVEDA "]
     else:
-        pass
+        menu_list = ["TRENER " ,  "  -Team management"  , "  -Stats"  ,"  -Trening  " , \
+                    "REFF ",  "  -Delka utkani", "  -Potvrdit teamy ", "  -Nastaveni hriste ","  -Novy zapas", "  -pcXpc","  -pcXuzivatel" , \
+                    "SETTINGS ", "  -Velikost okna",\
+                    "LAB ", "  -zapnout lab mod","  -vypnout grafiku" , \
+                    "HELP "]
 
-def f_choose_scree_from_selection(game_menu_selcection):
-    screen = 1
-    if game_menu_selcection == 'AA' :
-        screen = 2
-    return screen    
+
+
+    menu_heading = "GAME MENU"
+    menu_menu_heading_pages = MenuFont_heading.render(menu_heading, 1, green_field)
+    The_game_window.surface.blit(menu_menu_heading_pages,(The_game_window.game_menu_x_start, 0.25 *The_game_window.menu_line_spacing))
+
+    for menu_loop in range(0,len(menu_list)):
+        menu_moves_pages = MenuFont.render(menu_list[menu_loop], 1, grey)
+        The_game_window.surface.blit(menu_moves_pages,(The_game_window.game_menu_x_start, menu_loop *  The_game_window.menu_line_spacing + The_game_window.heading_shift))
+
+
+
+'''
+Rozdeleni okna aplikace 4x rozne plochy
+____________________        ____________________
+| 1 | 3             |       |  4                |
+|   |               |    => |                   |
+|___|_______________|       |___________________|
+| 2                 |       | 2                 |
+|___________________|       |___________________|
+'''
+# okno rozdeleno na 3 casti
+def draw_menu_lines_ID_3(The_game_window,The_field):
+    #rozdeleni obrazovky aplikace
+    pygame.draw.rect(The_game_window.surface, white , (0 ,0 ,The_game_window.window_width, The_game_window.window_height  )   ,  1)
+    pygame.draw.lines(The_game_window.surface,  grey, True, ((The_field.field_bl_window[0],0 ) , \
+                                                             ( The_field.field_bl_window[0] , The_field.field_bl_window[1] )), 1)
+    pygame.draw.lines(The_game_window.surface,  grey, True, ((0 ,The_field.field_bl_window[1] ) ,  \
+                                                             ( The_game_window.window_width ,The_field.field_bl_window[1] )), 1)
+# menu je ukryto - okno rozdeleno na 2 casti
+def draw_menu_lines_ID_4(The_game_window,The_field):
+    #rozdeleni obrazovky aplikace
+    pygame.draw.rect(The_game_window.surface, white , (0 ,0 ,The_game_window.window_width, The_game_window.window_height  )   ,  1)
+    pygame.draw.lines(The_game_window.surface,  grey, True, ((0 ,The_field.field_bl_window[1] ) ,  \
+                                                             ( The_game_window.window_width ,The_field.field_bl_window[1] )), 1)
+
+
+def f_menu_selected(position_clicked,The_game_window,The_field,list_of_ingamers):                                                       #vyber indexu z listu funkci ,cela funkce jde napsat prehledneji
+    screen = 0
+    # The_game_window.heading_shift posun na zacatku menu
+    line_selected = math.ceil ((position_clicked[1]- The_game_window.heading_shift) / The_game_window.menu_line_spacing   )
+    if  line_selected == 1:
+        #ref
+        list_of_ingamers[0].start_test_match (The_game_window,The_field,list_of_ingamers,True)
+        screen = 4
+    elif  line_selected == 2:
+        for no_of_ingamers in range (2 , len(list_of_ingamers)):
+            list_of_ingamers[no_of_ingamers].game_status = "pause"
+        screen = 4
+    elif  line_selected == 3:
+        for no_of_ingamers in range (2 , len(list_of_ingamers)):
+            list_of_ingamers[no_of_ingamers].game_status = "pause"
+        list_of_ingamers[0].restart_players(The_game_window,The_field,list_of_ingamers)
+        screen = 4
+    elif  line_selected == 4:
+        print (list_of_ingamers[3].team_coach.data)
+        list_of_ingamers[3].team_coach.save_training()
+        screen = 4
+
+
+    #DODELAT MENU
+    return screen
+
+
+
+
+# --------------------------SCREENS-----------------------
+
+def f_print_score(score,The_game_window,The_field):
+    show_score = WelcomeFont.render(str(score), 1, grey)
+    The_game_window.surface.blit(show_score,(The_field.field_bl_window [0], The_field.field_bl_window[1] + The_game_window.menu_line_spacing ))
+
+
+def f_print_player_details(The_game_window,The_field,player,list_of_ingamers):
+    shift_vertikal = 0
+    list_of_tags = ["angle: ","velocity: ","ball angle: ","ball distance","site: "]
+    list_of_data =[str(round(player.path_target)), \
+                   str(player.velocity), \
+                   str(round(player.calculate_angle_to_other_object(list_of_ingamers[1].position))), \
+                   str(round(pythagoras_distance (player.position,list_of_ingamers[1].position))), \
+                   player.field_site ]
+
+
+
+    for data_index in range (0,len(list_of_data)):
+        data = MenuFont.render(  list_of_tags[data_index] + list_of_data[data_index]   , 1, grey)
+        The_game_window.surface.blit(data,(The_field.field_bl_window [0], The_field.field_bl_window[1] + The_game_window.menu_line_spacing + shift_vertikal ))
+        shift_vertikal = shift_vertikal + The_game_window.menu_line_spacing
+
+def f_print_ball_details(The_game_window,The_field,ball,list_of_ingamers):
+    shift_vertikal = 0
+    list_of_tags = ["angle: ","owner: ","velocty: ","site: "]
+    list_of_data =[str(round(ball.path_target)), \
+                   str(ball.owner), \
+                   str(ball.velocity), \
+                   str(ball.field_site) ]
+
+
+    for data_index in range (0,len(list_of_data)):
+        data = MenuFont.render(  list_of_tags[data_index] + list_of_data[data_index]   , 1, grey)
+        The_game_window.surface.blit(data,(The_field.field_bl_window [0], The_field.field_bl_window[1] + The_game_window.menu_line_spacing + shift_vertikal ))
+        shift_vertikal = shift_vertikal + The_game_window.menu_line_spacing
+
+
+
 
 def draw_weclome(The_game_window):
-    test = WelcomeFont.render('Flatball vitejte', 1, grey)
+    if The_game_window.language == "CZ":
+        test = WelcomeFont.render('Flatball vitejte', 1, grey)
+    else:
+        test = WelcomeFont.render('Flatball welcome', 1, grey)
+
     The_game_window.surface.blit(test,(The_game_window.window_width * 0.4 , The_game_window.window_height * 0.3))
 
 
-def draw_main_menu(The_game_window,menu_line_spacing,heading_shift):
-    menu = [ 'nova hra', 'trener','reff','nastaveni','napoveda','Lab','1','2','3' ]
-    for menu_loop in range(0,len(menu)):
-        menu_moves_pages = MenuFont.render(menu[menu_loop], 1, grey)
-        The_game_window.surface.blit(menu_moves_pages,(50, menu_loop *  menu_line_spacing + heading_shift))
 
 
-def draw_AA_menu(The_game_window,menu_line_spacing,heading_shift):
-    menu = [ '<-nova hra zahajena', 'statss','menu zamkly','1','2','3','1','2','3' ]
-    for menu_loop in range(0,len(menu)):
-        menu_moves_pages = MenuFont.render(menu[menu_loop], 1, grey)
-        The_game_window.surface.blit(menu_moves_pages,(50, menu_loop *  menu_line_spacing + heading_shift))
 
-def draw_AB_menu(The_game_window,menu_line_spacing,heading_shift):
-    menu = [ '<-trener', 'b','c','1','2','3','1','2','3' ]
-    for menu_loop in range(0,len(menu)):
-        menu_moves_pages = MenuFont.render(menu[menu_loop], 1, grey)
-        The_game_window.surface.blit(menu_moves_pages,(50, menu_loop *  menu_line_spacing + heading_shift))
 
-def draw_AC_menu(The_game_window,menu_line_spacing,heading_shift):
-    menu = [ '<-reff', 'b','c','1', ]
-    for menu_loop in range(0,len(menu)):
-        menu_moves_pages = MenuFont.render(menu[menu_loop], 1, grey)
-        The_game_window.surface.blit(menu_moves_pages,(50, menu_loop *  menu_line_spacing + heading_shift))
+def pythagoras_distance (location_1,location_2):                                                                            #stejna funkce v 2 modulech opravit
+    ingamer_adjescent =  abs (location_1[0]  -  location_2[0])
+    ingamer_opposite =  abs (location_1[1] -  location_2[1])
+    ingamer_hypotensue = math.sqrt(ingamer_adjescent **2 + ingamer_opposite **2)
 
-def draw_AD_menu(The_game_window,menu_line_spacing,heading_shift):
-    menu = [ '<-nastaveni', 'b','c','1','2','3' ]
-    for menu_loop in range(0,len(menu)):
-        menu_moves_pages = MenuFont.render(menu[menu_loop], 1, grey)
-        The_game_window.surface.blit(menu_moves_pages,(50, menu_loop *  menu_line_spacing + heading_shift))
-
-def draw_AE_menu(The_game_window,menu_line_spacing,heading_shift):
-    menu = [ '<-napoveda', 'b','c','1','2', ]
-    for menu_loop in range(0,len(menu)):
-        menu_moves_pages = MenuFont.render(menu[menu_loop], 1, grey)
-        The_game_window.surface.blit(menu_moves_pages,(50, menu_loop *  menu_line_spacing + heading_shift))
-
-def draw_menu_lines(The_game_window,The_field):
-
-    pygame.draw.rect(The_game_window.surface, white , (0 ,0 ,The_game_window.window_width, The_game_window.window_height  )   ,  1)
-
-    pygame.draw.lines(The_game_window.surface,  grey, True, ((The_field.field_bl_window[0],0 ) , \
-                                                        ( The_field.field_bl_window[0] , The_field.field_bl_window[1] )), 1)
-
-    pygame.draw.lines(The_game_window.surface,  grey, True, ((The_field.field_bl_window[0] ,The_field.field_bl_window[1] ) ,  \
-                                                        ( The_game_window.window_width ,The_field.field_bl_window[1] )), 1)
+    return ingamer_hypotensue
