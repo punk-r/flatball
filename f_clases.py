@@ -1,748 +1,491 @@
-
-                                                                                                                # ne vsechny metody potrebujou okno jako parametr
-
-
-import f_menu
-from f_menu import *
-
-import math
 import random
-
-#pygame modul
 import pygame
 from pygame.locals import *
-import threading
+from threading import  Thread
 import time
 import copy
 
+import xml_f
+from xml_f import *
+import f_menu                                                                          # ne vsechny metody potrebujou okno jako parametr zkontroluj
+from f_menu import *
+import neural_network
+from neural_network import *
+import class_ingamer
+from class_ingamer import *
+import class_player_ball
+from class_player_ball import *
+import support_functions
+from support_functions import *
+import screens
+from screens import *
+
 clock = pygame.time.Clock()
 
-debug_mode = 0
-debug_mode2 = 0
+'''
+Tridy :
 
-# class window
+        game_window - okno hry , surafec pro kresleni grafiky
+        game_field  - hodnoty pro vykreslenu hraciho hriste
+        class_coach - trener, vyhodnocuje trening, urcuje strategii hry
+        reff        - rozhotci, potvrzuje hrace do hry ,kterou pote kontroluje
+
+'''
+
+#--------------------------------------------------------------------------------------------class game_window
+# trida pro okno aplikace
 class game_window():
     window_width = 1200
     window_height = 700
     surface = pygame.display.set_mode((window_width,window_height),0,32)
-    items_on_surface = 0   #   MOZNA NEBUDE POUZITE???
-    game_menu_x_start = 5
-    game_menu_x_end = 200
-    menu_line_spacing = 20
+    screen_size_type = "none"                                                                            # uzite?
+    items_on_surface = 0                                                                                 #   MOZNA NEBUDE POUZITE???
+    game_menu_x_start = 5                       # hranice pro hlavni menu
+    game_menu_x_end = int (window_width / 6)
+    game_menu_y_end = int (window_height * 4/ 5)
+    menu_line_spacing = 0.1 * game_menu_x_end   # nastaveni pro hlavni menu
     heading_shift = 2 * menu_line_spacing
-    menu_selection = 0
+    menu_on_screen = True
     language = "CZ"
+    lab_mode_b = 0
 
+    # nastavni okna, tabulky, team manegmentu, vyberu hracudo hry
+    team_detail_lines = 6                       # 1 x nazev + 5 hracu teamu
+    mngmt_column_width = 0.45 *  game_menu_x_end                                                             #udelat pomerem z ruznych velikosti okna
+    mngmt_teams_on_page = 10
+    mngmt_text_ratio = 3                        # zvetseni pisma ku menu fontu
+    selection_game_text_ratio = 2               # zvetseni pisma ku menu fontu
+    mngmt_shift_from_menu = 2.5 *  menu_line_spacing
+    buttons = []
 
+    def swap_language(self):
+        if self.language == "CZ" :
+            self.language = "NOTCZ"
+        else:
+            self.language = "CZ"
 
+    def set_window_size(self,new_size):
+        self.window_width = new_size[0]
+        self.window_height = new_size[1]
+        self.surface = pygame.display.set_mode((self.window_width,self.window_height),0,32)
+
+#--------------------------------------------------------------------------------------------class game_field
+# trida pro hraci pole
 class game_field():
-    type ='a'                       #pro ruzna vykraslovani hriste,zatim nepouzito
-    goals_height = 100
-    goals_width = 10
-    field_bl_window = [100,500]     #hotnoty sou prepsany pri set field
-    lab_mode_b = 1
-    field_width = 500               #hotnoty sou prepsany pri set field
-    field_height = 200              #hotnoty sou prepsany pri set field
-    field_bl_corner = [200,650]     #hotnoty sou prepsany pri set field
-    gap = 20                        #rozdil okna pro hriste a hriste samotneho
+    type ="notSpecified"       # pro ruzna vykreslovani hriste,zatim NEVYUZITO
+    goals_height = 100         # velikosti branek
+    goals_width = 10            # velikosti branek
+    #field_bl_window = [0,0]    # ram pro hraci hriste,hotnoty sou nastaveny pri set field
+    #lab_mode_b = 1             # zobrazeni pomocnych vypoctu
+    field_width = 0            # hotnoty sou nastaveny pri set field
+    field_height = 0           # hotnoty sou nastaveny pri set field
+    field_bl_corner = [0,0]    # hranice hracih o hriste,hotnoty sou nastaveny pri set field
+    gap = 15
 
+    # nastaveni dle hodnot aplikace
     def set_field (self,game_window):
-        self.field_bl_window[0] = int ( 1/6 * game_window.window_width )
-        self.field_bl_window[1] = int ( 4/5 * game_window.window_height )
-        self.field_bl_corner[0] = int ( 1/6 * game_window.window_width + self.gap )
+        #self.field_bl_window[0] = int ( 1/6 * game_window.window_width  )
+        #self.field_bl_window[1] = int ( 4/5 * game_window.window_height  )
+
+        #self.field_bl_corner[0] = int ( 1/6 * game_window.window_width + self.gap )
+        self.field_bl_corner[0] = int ( 15)
         self.field_bl_corner[1] = int ( 4/5 * game_window.window_height - self.gap/2 )
-        self.field_width = int ( 0.7 * game_window.window_width - self.gap)
-        self.field_height = int ( 0.7 * game_window.window_height - self.gap)
-        self.gap = self.goals_width * 1.5 #meera je sirka  brany a pul
 
+        self.field_width = int ( 0.95 * game_window.window_width )
+        self.field_height = int ( 0.7 * game_window.window_height )
+        self.goals_height = 0.2 * self.field_height
 
-#--------------------------------------------------------------------------------------------class ingamer
-# parent class pro pohybujici se objekty v hre
-class ingamer():
-    def __init__(self,new_position):
-        self.position = new_position
-        self.path_target = 0
-        self.velocity = [1,0]
+'''
+# nacte teamy z xml
+The_reff.load_data_from_xml()
 
-    #path_target = 0
-    #velocity = [0,0]
-    radius = 15
-    destination_move = [0,0]
-    lab_mode_b = 1
-    color = blue
-    collision_allowed_b = False
-    selected_b = False
-    team_type = "Neutral"          # H - human ,  AI , Neutral for ball and reff
-    field_site = "neutral"         # L team ma vlastni branu na levo, R team ma vlastni branu na pravo
-
-
-
-    '''
-    1.uhel pocitame od brany sveho teamu , kdyz hrac stoji v uhlu 180 ,znamena ze je 'zady' k brane
-    2.hrac se muze nastavit pouze jednim smerem to znamena kdyz chsi nastavit -20 supnu musim uzit 340   (360 -20)
-    pokud je brana v pravo uhly se zrcadli aby platilo pravidlo 1
-
-
-
-    field_site = L
-                             90
-    b                  0.     |     1.
-    r                         |
-    a               0 ------------------ 180
-    n                         |
-    a                   3.    |     2.
-                             270
-
-    field_site = R
-                             90
-                       1.     |     0.                b
-                              |                       r
-                 180 ------------------ 0             a
-                              |                       n
-                        2.    |     3.                a
-                             270
-
-
-
-
-
-    '''
-
-
-
-    def calculate_angle_to_other_object(self,new_target):
-        # pozice newtarget ku 'self'
-        below = True
-        left = True
-        new_angle = 180
-        # error hodnota pro pripad ze ew target je uvnit radiusu hrace => hrac bude natocen k souperove brane
-        # nelze nastavit target blizez k hraci nez radius
-
-        target_adjescent =  abs (self.position[0] -  new_target[0])
-        target_opposite =  abs (  self.position[1] -  new_target[1])
-        target_hypotensue = math.sqrt(target_opposite**2   +    target_adjescent**2)                                # pouzij udelanou funkco pythagoras_disnace
-
-        if  target_hypotensue > self.radius and target_adjescent != 0 :
-            new_angle = math.degrees (math.atan ( target_opposite / target_adjescent ))
-
-            if self.position[1] < new_target[1] :
-                below = False
-
-            if self.field_site == "left"or self.field_site == "neutral":
-                if self.position[0] >= new_target[0] :
-                    left = False
-
-                # uhel se meri od vodorovne x osy
-                # dopocet dle kvadranntu
-                if  below == False and left == False :
-                    new_angle = 360 - new_angle
-                elif  below == True and left == True :
-                    new_angle = 90 + ( 90 - new_angle)
-                elif  below == False and left == True :
-                    new_angle = 180 + new_angle
-
-
-            if self.field_site == "right":              # orava pro oponenta
-                #Print("ooopravaoponent")
-                new_angle = math.degrees (math.atan ( target_opposite / target_adjescent ))
-
-                if self.position[0] >= new_target[0]:
-                    left = False
-
-                # uhel se meri od vodorovne x osy
-                # dopocet dle kvadranntu
-                if  below == True and left == False :
-                    new_angle = 180 - new_angle
-                elif  below == True and left == True :
-                    new_angle =  new_angle
-                elif  below == False and left == True :
-                    new_angle = 360 - new_angle
-                elif  below == False and left == False :
-                    new_angle =  180 + new_angle
-
-
-
-            # prepocet pro mezni hodnotu ,kdy je uhel 90 stupnu => osa Y , vypocet atan vyse
-            if self.position[0] == new_target[0]:
-                if self.position[1] > new_target[1]:
-                    new_angle = 90
-                else:
-                    new_angle = 270
-
-        return new_angle
-
-
-    def set_path_target(self,new_angle):
-        below = -1
-        left = -1
-
-        # krok je 2 pixely => mene trhane pohyby , lze nastavit
-        step = 2
-
-                                                                                                                        # !! kvadranty sou na opak ZKONTROLUJ JEDE ale NEMElOBY!!!!!!
-
-        #  cislo kvadrantu se vypocita jinak nezli klasicke oznaceni, zalezi na pootoceni od brany
-        qvadrant =  math.floor (new_angle / 90)  # pro mic je cislo 0,1,2,3
-
-        if self.field_site == "right":
-            qvadrant =  math.floor (new_angle / 90)  # je cislo 0,1,2,3
-            qvadrants_list = [[1 ,-1 ],[1 ,-1 ],[1 ,-1 ],[1 , -1]]                                                       #zkontrolovat!!!
-
-        if self.field_site == "left" or self.field_site == "neutral":
-            qvadrant =  math.floor (new_angle / 90)  # je cislo 0,1,2,3
-            qvadrants_list = [[-1 ,-1 ],[-1 ,-1 ],[-1 ,-1 ],[-1 , -1]]                                                      #jede ale nemeloby!!!!!!!
-
-        left =  qvadrants_list [qvadrant] [0]
-        below = qvadrants_list [qvadrant] [1]
-
-
-        shift_hypotensue = step
-        shift_adjescent = left * math.cos(math.radians(new_angle)) *  shift_hypotensue
-        shift_opposite = below * math.sin(math.radians(new_angle)) *  shift_hypotensue
-
-        self.velocity[0] =  round (shift_adjescent)
-        self.velocity[1] =  round (shift_opposite)
-        self.path_target = new_angle
-
-        if self.field_site == "left"or self.field_site == "neutral":
-            # hranicni hodnoty
-            if new_angle == 0:
-                self.velocity[0] = -1 * step
-                self.velocity[1] = 0
-            if new_angle == 90:
-                self.velocity[0] =  0
-                self.velocity[1] = -1 * step
-            if new_angle == 180:
-                self.velocity[0] = step
-                self.velocity[1] =  0
-            if new_angle == 270:
-                self.velocity[0] =  0
-                self.velocity[1] =  step
-
-        if self.field_site == "right":
-            # hranicni hodnoty
-            if new_angle == 0:
-                self.velocity[0] =  step
-                self.velocity[1] = 0
-            if new_angle == 90:
-                self.velocity[0] =  0
-                self.velocity[1] = -1 * step
-            if new_angle == 180:
-                self.velocity[0] = -1 *step
-                self.velocity[1] =  0
-            if new_angle == 270:
-                self.velocity[0] =  0
-                self.velocity[1] =  step
-
-
-
-    def draw_ingamer (self,game_window):
-        if self.selected_b == True:
-            color = yellow_item_selected
-        else :
-            color = self.color
-        #ingamer_item = pygame.draw.circle(game_window.surface, color, ( self.position[0] ,self.position[1]) ,self.radius, self.radius)
-        pygame.draw.circle(game_window.surface, color, ( self.position[0] ,self.position[1]) ,self.radius, self.radius)
-
-
-
-    def set_position(self,new_x,new_y):
-        self.position = [new_x,new_y]
-
-    def set_selected (self,new_status):
-        #hrac muze byt oznaceny pouze pokud je v teamu uzivatele
-        if new_status == True :
-            if self.team_type != "AI" :
-                self.selected_b = True
-        else:
-            self.selected_b = False
-
-    # jestli je item oznacen mysi nastavi se na selected , dle podminek set_selected
-    def is_selected_by_click (self,position_clicked):
-        x_limits = [  self.position[0] - self.radius   ,  self.position[0] + self.radius    ]
-        y_limits = [  self.position[1] - self.radius   ,  self.position[1] + self.radius    ]
-
-        if f_is_clikced_on_circle(x_limits,y_limits,position_clicked) == True:
-            return True
-        else:
-            return False
-
-
-
-
-    def read_selected (self):
-        return self.selected_b
-
-
-
-#--------------------------------------------------------------------------------------------class player
-
-class player (ingamer):
-    game_status = 0         # hra, pausa, ....
-    angle = 0                                                                                                               #neni potreba je uzito path target
-    user_driven = 0          # kdyz je team_type human , je hrac ovladany uzivatelem Y/N
-    team = 0                 # jmeno teamu
-    speed  = 0
-    balance  = 0
-    acuracy = 0
-    player_type = "notSpecified"          # utocnik obrance brankar midfielder
-    position_by_strategy = 0
-    strategy = 0
-    tactic= 0
-    dsetination_kick = 0
-    vision = 50
-    ball_owner_b = False
-    team_coach = "notSpecified"
-
-
-    # loc_home_goal = [0,0]
-    # angle_to_home_goal = 180   #zacina otoceny
-
-
-    #def automated_move():
-
-
-    def set_coach (self,new_coach):
-        self.team_coach = new_coach
-
-    def send_data_to_coach(self,action,list_of_ingamers):
-        self.team_coach.process_data(self,action,list_of_ingamers)
-
-
-    # pro testy
-    def move_round(self,The_game_window,The_field,list_of_ingamers):
-
-        while self.game_status ==  "game" :
-            clock.tick(5)
-            if self.selected_b == False:
-                #print("aroundmetoda")
-                self.set_path_target( self.path_target + 10 )
-                if  self.path_target == 360:
-                    self.set_path_target( 0 )
-                self.move (The_game_window,The_field,list_of_ingamers)
-
-
-    def move(self,The_game_window,The_field,list_of_ingamers):
-        if debug_mode == 1:
-            print('metodaplayer')
-
-        bottom = The_field.field_bl_corner[1]
-        top    = The_field.field_bl_corner[1] - The_field.field_height
-        right  = The_field.field_bl_corner[0] + The_field.field_width
-        left   = The_field.field_bl_corner[0]
-
-        #-------------DODELAT bounderies / colisions ----------------------
-        test_target_on_filed = 0
-        test_target_too_close = 1
-        path_for_ball_check = 1
-        ball_is_frozen = 0
-
-        #  1.detekce pohybu na hristi, cast hrace muze prejit pres linii hriste , pro pripad ze se balon zastavil prave na teto linii
-        if self.position[0] + self.velocity[0] > left - self.radius/2  and self.position[0] + self.velocity[0] < right + self.radius/2  and \
-            self.position[1] + self.velocity[1] < bottom + self.radius/2  and self.position[1] + self.velocity[1] > top - self.radius/2  :
-
-            test_target_on_filed = 1
-
-        # 3. detekce hracu / mice
-        for no_of_ingamers in range (1,len(list_of_ingamers)):
-                other_ingamer_position = list_of_ingamers[no_of_ingamers].position
-                ingamer_adjescent =  abs (self.position[0] + self.velocity[0] -  other_ingamer_position[0])
-                ingamer_opposite =  abs (  self.position[1]  + self.velocity[1]-  other_ingamer_position[1])
-                ingamer_hypotensue = math.sqrt(ingamer_adjescent **2 + ingamer_opposite **2)
-
-                ingamer_adjescent_before_step =  abs (self.position[0]  -  other_ingamer_position[0])
-                ingamer_opposite_before_step =  abs (  self.position[1] -  other_ingamer_position[1])
-                ingamer_hypotensue_before_step = math.sqrt(ingamer_adjescent_before_step **2 + ingamer_opposite_before_step **2)
-
-
-
-                # specialni pripad kdy je mic 'pod' hracem => phyb jen hrace , 2 je krok hrace , mic a hrac maji stejnou polohy pred krokem hrcace
-                # podminka opravuje chybu kde hrac pri pohybu pro blokovany mic udela krok,to vedlo k zamrznuti mice k hracovu radiusu
-                # velikost je mensi nez pred kroke a to presne o jeden pixel
-                if ingamer_hypotensue_before_step < list_of_ingamers[no_of_ingamers].radius + self.radius:
-                    ball_is_frozen = 1
-
-
-                # kontrola kolize s micem
-                if no_of_ingamers == 1 and ball_is_frozen == 0 :
-
-
-                    distance_to_owned_ball = 3
-                    # 1. pohyb neposune mic, hrac je v blizkosti mice => je vlastnik
-                    if ingamer_hypotensue < list_of_ingamers[no_of_ingamers].radius + self.radius + distance_to_owned_ball and \
-                        ingamer_hypotensue > list_of_ingamers[no_of_ingamers].radius + self.radius:
-
-                        list_of_ingamers[no_of_ingamers].set_owner(self)
-
-                        ball_new_target = self.calculate_angle_to_other_object(list_of_ingamers[no_of_ingamers].position)
-                        list_of_ingamers[no_of_ingamers].set_path_target (ball_new_target)
-
-
-                                                                                                                                        # chyba nekdy mic zamrzne u hrace mozna zaokrouhlovani pri vypoctu souradnic
-                    # 2. pohyb posune mic, hrac udelal pohyb na lokaci mice => mic se o kousek posune
-                    if ingamer_hypotensue < list_of_ingamers[no_of_ingamers].radius + self.radius  :
-
-
-                        list_of_ingamers[no_of_ingamers].set_owner(self)
-                        # novy uhel(posun mice)  je stred hrace a souradnice kontaktu s micem
-                        ball_new_target = self.calculate_angle_to_other_object(list_of_ingamers[no_of_ingamers].position)
-                        list_of_ingamers[no_of_ingamers].set_path_target (ball_new_target)
-
-                        path_for_ball_check  = list_of_ingamers[no_of_ingamers].is_ball_path_clear(The_game_window,The_field,list_of_ingamers)
-
-                        if path_for_ball_check == 1:
-                            list_of_ingamers[no_of_ingamers].speed = 2
-                        else:
-                            list_of_ingamers[no_of_ingamers].speed = 0
-
-
-                    if ingamer_hypotensue > list_of_ingamers[no_of_ingamers].radius + self.radius + 2 and \
-                            list_of_ingamers[no_of_ingamers].owner == self :
-                              list_of_ingamers[no_of_ingamers].reset_owner(self)
-
-
-                # vynecha 'sebe' v kontrolre kolize , vynecha mic index '1' v list_of_ingamers
-                if ingamer_hypotensue < 2 * self.radius and other_ingamer_position != self.position and no_of_ingamers > 1 :
-                    test_target_too_close = 0
-
-
-        if test_target_on_filed == 1 and test_target_too_close ==1 and path_for_ball_check == 1:
-            self.position =  [ self.position[0] + self.velocity[0]  ,self.position[1]  + self.velocity[1]  ]
-
-            #data tracking
-            if self.selected_b == True:
-                self.send_data_to_coach("m",list_of_ingamers)
-
-
-
-        if debug_mode == 1:
-            print('plr---------- ')
-            print (list_of_ingamers[1])
-            print(vars(list_of_ingamers[1]))
-            print (list_of_ingamers[2])
-            print(vars(list_of_ingamers[2]))
-            print (list_of_ingamers[3])
-            print(vars(list_of_ingamers[3]))
-            print('---------- ')
-
-
-
-            # DRAW je pro testovani skoro stejny pro mic i hrace
-
-    def draw_ingamer(self,game_window):
-        #self.draw_ingamer(game_window)
-        ingamer.draw_ingamer(self,game_window)
-
-        # kresli vision hrace - kam se diva
-        # kresleno z velocity jelikoz to je uhel kam hrac smeruje
-
-        viev = 10 # zobrazeni pohledu je 10 pixelu , velocity je |2| * 5 = 10
-
-        vision_adjescent = viev * self.velocity[0]
-        vision_opposite = viev * self.velocity[1]
-
-
-        if self.ball_owner_b == True :
-            viev_color = green
-        else:
-            viev_color = self.color
-
-        '''
-        if self.selected == 1:                                                                                                #s[patne reseni potrebuje opravit]
-            pygame.draw.lines(game_window.surface, viev_color, True, ((self.position[0] ,self.position[1] ), \
-                                ( self.position[0] + vision_adjescent ,self.position[1] + vision_opposite  )), 1)
-
-        '''
-
-
-        pygame.draw.lines(game_window.surface, viev_color, True, ((self.position[0] ,self.position[1] ), \
-                                ( self.position[0] + vision_adjescent ,self.position[1] + vision_opposite  )), 1)
-
-
-
-    def draw_data_lower_menu (self,The_game_window,The_field,list_of_ingamers):
-        f_print_player_details(The_game_window,The_field,self,list_of_ingamers)
-
-
-
-
-#--------------------------------------------------------------------------------------------class ball
-
-
-class ball (ingamer):
-    resistance = 1
-    color = white
-    radius = 10
-    owner = 'nooneyet'
-    speed = 0
-
-
-    def draw_data_lower_menu (self,The_game_window,The_field,list_of_ingamers):
-        f_print_ball_details(The_game_window,The_field,self,list_of_ingamers)
-
-
-
-
-
-    # kontrola pro: hrac nemuze udelat krok kdyz je pred nim mic , a mic nema misto kam se posunout
-    # path v instanci je uz novy od metody move od hrace
-    def is_ball_path_clear(self,The_game_window,The_field,list_of_ingamers):                                                           #opakujicis se kod pro preponu kolize
-        decision = 1
-
-        bottom = The_field.field_bl_corner[1]
-        top    = The_field.field_bl_corner[1] - The_field.field_height
-        right  = The_field.field_bl_corner[0] + The_field.field_width
-        left   = The_field.field_bl_corner[0]
-
-        #  detekce pohybu na hristi, odraz od sten
-        if self.position[0] - self.radius + self.velocity[0]  < left :
-            decision =0
-        if self.position[0] + self.radius + self.velocity[0]  > right :
-            decision =0
-        if self.position[1] + self.radius + self.velocity[1]  > bottom :
-            decision =0
-        if self.position[1]  - self.radius + self.velocity[1]  < top :
-            decision =0
-
-
-        # detekce hracu
-        for no_of_ingamers in range (2,len(list_of_ingamers)):
-            other_ingamer_position = list_of_ingamers[no_of_ingamers].position
-            ingamer_adjescent =  abs (self.position[0] + self.velocity[0] -  other_ingamer_position[0])
-            ingamer_opposite =  abs (  self.position[1]  + self.velocity[1]-  other_ingamer_position[1])
-            ingamer_hypotensue = math.sqrt(ingamer_adjescent **2 + ingamer_opposite **2)
-
-            if ingamer_hypotensue <= self.radius + list_of_ingamers[no_of_ingamers].radius  :                                    # zkontrolovat porovnani
-
-                decision =0
-
-        return decision
-
-    def reset_owner(self,player):
-        if self.owner == player:
-            self.owner = 0
-            self.color = white
-            player.ball_owner_b = False
-
-
-    def set_owner(self,new_owner):
-                                                                                                                                #nejelo by spravne bo by neslo sebrat teamu mic
-        '''
-        # nelze nastavit 2 hrace jako owners ve stejny cas
-        if self.owner == 0:
-            new_owner.ball_owner_b = True
-            self.owner = new_owner
-            self.color = green
-        '''
-        new_owner.ball_owner_b = True
-        self.owner = new_owner
-        self.color = green
-        self.field_site = new_owner.field_site
-
-
-
-
-    def move(self,The_game_window,The_field,list_of_ingamers):                                                                  #zkontroluj jaka cast move lze udelat pro ingamer a pak jen zdedit
-        if debug_mode == 1:
-            print('metodaball')
-
-        # 2 je rychlost pri 'driblingu'
-        if self.speed > 2 :
-            # kdyz krac mic odkopne ,mic ztraci vlatnika
-            self.owner = 0
-            self.color = white
-
-        step = 2
-        bottom = The_field.field_bl_corner[1]
-        top    = The_field.field_bl_corner[1] - The_field.field_height
-        right  = The_field.field_bl_corner[0] + The_field.field_width
-        left   = The_field.field_bl_corner[0]
-
-        #-------------DODELAT bounderies / colisions ----------------------
-
-        # detekce hracu
-        for no_of_ingamers in range (2,len(list_of_ingamers)):
-            other_ingamer_position = list_of_ingamers[no_of_ingamers].position
-            ingamer_adjescent =  abs (self.position[0] + self.velocity[0] -  other_ingamer_position[0])
-            ingamer_opposite =  abs (  self.position[1]  + self.velocity[1]-  other_ingamer_position[1])
-            ingamer_hypotensue = math.sqrt(ingamer_adjescent **2 + ingamer_opposite **2)
-
-
-            if ingamer_hypotensue <= self.radius + list_of_ingamers[no_of_ingamers].radius  :
-
-
-
-                # JEN PRO TESTY ,JINAK POTREBA DODELAT VYPOCET UHLU ODRAZu
-                self.velocity[0] = self.velocity[0] * -1
-                self.velocity[1] = self.velocity[1] * -1
-
-
-                '''
-                                                            #pri pohybu race kdyz posune mic se vola 'move'                     !!!!!!
-                                                            # mice ale v tu chvili mic muze byt v radiusu hrace                 !!!!
-                                                            # a mic se zacykli a zamrzne u hrace                                !!!!
-
-
-                #vypocet odrazu balonu od hrace, pomoci uhlu kde je hrac a uhlu kontaktu mice s hracem
-                angle_to_player = self.calculate_angle_to_other_object(list_of_ingamers[no_of_ingamers].position)
-                angle_of_balls_target = self.path_target
-                touch_point_difference = angle_to_player - angle_of_balls_target
-                angle_of_reflected_ball = angle_of_balls_target + touch_point_difference
-                self.set_path_target(angle_of_reflected_ball)
-                '''
-
-
-                # snizeni energie(speed)
-                # hodnoty treba otestovat pri hre, zpomaleni obdobne jako pri skutecne hre
-                # zpomaleni s projevi jen pri kontaktu mice a hrace, pri kontaktu mice konce pole se energie nemeni
-                if self.speed > 100 :
-                    self.speed = int( self.speed * 0.8  )
-                elif self.speed > 5 and self.speed <= 100  :
-                    self.speed = int( self.speed * 0.5  )
-                elif self.speed < 5:
-                    self.speed = 0
-
-
-
-
-        #  detekce pohybu na hristi, odraz od sten
-        if self.position[0] - self.radius + self.velocity[0]  < left :
-            self.velocity[0] = self.velocity[0] * -1
-        if self.position[0] + self.radius + self.velocity[0]  > right :
-            self.velocity[0] = self.velocity[0] * -1
-        if self.position[1] + self.radius + self.velocity[1]  > bottom :
-            self.velocity[1] = self.velocity[1] * -1
-        if self.position[1]  - self.radius + self.velocity[1]  < top :
-            self.velocity[1] = self.velocity[1] * -1
-
-
-        # potvrzeni nove pozice
-        self.position =  [ self.position[0] + self.velocity[0]  ,self.position[1]  + self.velocity[1]  ]
-
-
-        if debug_mode == 1:
-            print('ball---------- ')
-            print (list_of_ingamers[1])
-            print(vars(list_of_ingamers[1]))
-            print (list_of_ingamers[2])
-            print(vars(list_of_ingamers[2]))
-            print (list_of_ingamers[3])
-            print(vars(list_of_ingamers[3]))
-            print('---------- ')
-
-
-
-
-    def moving(self,The_game_window,The_field,list_of_ingamers):
-        for no_of_ingamers in range (2 , len(list_of_ingamers)):
-            list_of_ingamers[no_of_ingamers].ball_owner_b = False
-        if self.speed != 0:
-            self.speed = self.speed -1
-            self.move(The_game_window,The_field,list_of_ingamers)
-            list_of_ingamers[0].goal_check(The_field,list_of_ingamers[1])
-
-
-
-
-    #jak se hybe kontroluje path !!!!!!!
-
-
-    def draw_ingamer(self,game_window):                                                                                   # pouze pro testovani  pak ccela metoda do komentu, a draw dela metoda od ingamer tridyingamer
-        #self.draw_ingamer(game_window)
-        ingamer.draw_ingamer(self,game_window)
-
-        # kresli vision hrace - kam se diva
-        # kresleno z velocity jelikoz to je uhel kam hrac smeruje
-
-        viev = 10 # zobrazeni pohledu je 10 pixelu , velocity je |2| * 5 = 10
-
-        vision_adjescent = viev * self.velocity[0]
-        vision_opposite = viev * self.velocity[1]
-
-        '''
-        if self.ball_owner_b == True :
-            viev_color = green
-        else:
-            viev_color = self.color
-
-
-        if self.selected == 1:                                                                                                #s[patne reseni potrebuje opravit]
-            pygame.draw.lines(game_window.surface, viev_color, True, ((self.position[0] ,self.position[1] ), \
-                                ( self.position[0] + vision_adjescent ,self.position[1] + vision_opposite  )), 1)
-
-        '''
-
-
-        pygame.draw.lines(game_window.surface, green, True, ((self.position[0] ,self.position[1] ), \
-                                ( self.position[0] + vision_adjescent ,self.position[1] + vision_opposite  )), 1)
-
-
-
-
-
-
+'''
 
 #--------------------------------------------------------------------------------------------class coach
-
+# trida trenera
 class class_coach ():
-    data = []
+    def __init__(self,team):
+        self.team_play_at = team              # urcuje zda je tym domaci nebo ne ,pro nedomaci team se nezobrazuji detaily
+        self.load_data_from_xml()
+    # buffers pro vyber teamu v 'team management'
+    selected_slot_team_management = [-1,-1]
+    selected_slot_team_management_buffer = [-1,-1]
+    data_trening = []                   # hrac zasle svoje data, ktere trener vyhodnocuje. vse se uklada do data trening a data labels
+    data_labels = []
+    active_trening = False              # ukazatel treningu nebo zapasu
+    trening_sesion_total_runs = 5000    # 5000  celkovy pocet uceni pro spusteny trening
+    automated_trening_type = False      # true jestli je spusten zautomatizovy trening
+    loaded_teams_xml = ["none","none","none","none","none","none", \
+                        "none","none","none","none","none","none"]
 
-    def process_data(self,player,action,list_of_ingamers):
-        if len(self.data) <100:
+    # nacte data pro teamu a hrace z xml
+    def load_data_from_xml(self):
 
-            self.data.append([round(player.path_target), \
-                             round(player.calculate_angle_to_other_object(list_of_ingamers[1].position)), \
-                             round(pythagoras_distance (player.position,list_of_ingamers[1].position)) , \
-                             action])
+        # vypsani teamu a hracu,prvni column je pro popisky
+        Teams_path = os.path.abspath(os.getcwd())
+
+        # nacteni teamu do seznamu
+        list_of_teams = []
+
+        if self.team_play_at == "Home":
+            for filename in os.listdir(Teams_path + "\Teams\Home"):
+                if not filename.endswith('.xml'): continue
+                list_of_teams.append(filename)
+        else:
+            for filename in os.listdir(Teams_path + "\Teams\Away"):
+                if not filename.endswith('.xml'): continue
+                list_of_teams.append(filename)
+
+        # !!zatim se ukazuje jen 10teamu
+        if len(list_of_teams) > 10:
+            show_teams = 10
+        else :
+            show_teams =  len(list_of_teams)
+
+        if self.team_play_at == "Home":
+        # domaci teamy
+            for teams_loop in range (0,show_teams):
+                team_name = list_of_teams[teams_loop]
+                self.loaded_teams_xml[teams_loop] =  f_read_from_xml (Teams_path + "\Teams\Home\\" + team_name )
+        else:
+            # hoste
+            for teams_loop in range (0,show_teams):
+                team_name = list_of_teams[teams_loop]
+                self.loaded_teams_xml[teams_loop] =  f_read_from_xml (Teams_path + "\Teams\Away\\" + team_name )
+
+    # ulozi data z treningu
+    def process_data(self,player,action,list_of_ingamers,The_field):
+        reset_loop = 0
+        The_ball = list_of_ingamers[0]
+
+        # po dosazeni max runs se data vyhodnoti
+        if len(self.data_trening) < self.trening_sesion_total_runs:
+
+            # ukladani dat: uhel k sve brane,uhel k mici,vzdalenost k mici, provedena akce hracem
+            self.data_trening.append([round(player.path_target), \
+                             round(player.calculate_angle_to_other_object(The_ball.position)), \
+                             # oprava pro rozdil od hrany hrace ne od stredu kruznic (umozni vypocet nezavisle na velikosti hracu a mice)
+                             round(pythagoras_distance (player.position,The_ball.position) - player.radius - The_ball.radius  ) ])
+            # labels
+            self.data_labels.append(action)
+
+        else:
+            train_model(self.data_trening, self.data_labels , self.data_trening, self.data_labels, player.ID)   #testu trening data sou stejny jak test data
+            self.reset_training_arrays()
+            #start trainkeras model
+
+    # zmena souradnic pro hrace v prubehu treningu
+    def move_players_for_new_training_run (self,The_field,list_of_ingamers):
+        vertical_max    = The_field.field_bl_corner [1]
+        vertical_min    = The_field.field_bl_corner [1] - The_field.field_height
+        horizontal_min  = The_field.field_bl_corner [0]
+        horizontal_max  = The_field.field_bl_corner [0] + The_field.field_width
+
+        for no_of_ingamers in range (1,len(list_of_ingamers)): #mic a hraci jsou posunuti na novou pozici
+            list_of_ingamers[no_of_ingamers].set_position (random.randint(horizontal_min, horizontal_max), \
+                                                           random.randint(vertical_min, vertical_max))
 
 
+    def reset_training_arrays (self):
+        self.data_trening = []
+        self.data_labels = []
 
-    def save_training(self):                                                                     #zkontroluj zavreni souboru
+    def save_training(self):                                                                                        # pro testy, aplikace neuklada data do txt
         #time = datetime.now()
          # dd/mm/YY H:M:S
         #dt_string = time.strftime("%d-%m-%Y_%H-%M-%S")
         #file_name = 'SaveGeme_' + dt_string + '.txt'
         file_name_testing = 'training.txt'
         with open(file_name_testing, 'w') as f:
-            for write_loop in range (0,len(self.data)):
-                f.write( str(self.data[write_loop]))
+            for write_loop in range (0,len(self.data_trening)):
+                f.write( str(self.data_trening[write_loop]))
                 f.write( '\n')
 
+        file_name_testing = 'traininglabels.txt'
+        with open(file_name_testing, 'w') as f:
+            for write_loop in range (0,len(self.data_labels)):
+                f.write( str(self.data_labels[write_loop]))
+                f.write( '\n')
+
+    def move_around_team (self,The_game_window,The_field,list_of_ingamers):
+        while list_of_ingamers[2].game_status ==  "game" :
+            for move_around_loop in range (2,len(list_of_ingamers)):
+                if list_of_ingamers[move_around_loop].team_coach == self:
+                    list_of_ingamers[move_around_loop].move_round_once(The_game_window,The_field,list_of_ingamers)
+
+    '''
+
+    PRIDAT METODY PRO KONTROLU TEAMU ,na misto po jednom hraci
+        - zmena   strategy ....
+
+    '''
 
 
+    ## 3 metody pro team managemet hraci jdou mazat a kopirovat
+    # smazat hrace v team management
+    def delete_player_from_slot(self):
+        team_index = self.selected_slot_team_management[0]
+        player_index = self.selected_slot_team_management[1]
+        # kontrola  slot neni prazdny a je pro hrace
+        if player_index > 0:
+            # team slot neni prazdny len("none") = 4
+            if len(self.loaded_teams_xml[team_index]) == 6: # slot ma ulozeny team
+                self.loaded_teams_xml [team_index][player_index] = "    "                                                           #pridej team neni original
+                # nastavi team na status updated => hodnoty nactene ve hre se lisi od hodnot ulozenych v xml souboru
+                self.loaded_teams_xml [team_index][0][1] = "updated"
 
+    def copy_player_from_slot(self):
+        position_copy = copy.deepcopy(self.selected_slot_team_management)
+        self.selected_slot_team_management_buffer =  copy.deepcopy(position_copy)
 
+    def paste_player_from_other_slot(self):                                                                                         #pridej kontrolu pro zakaz kopirovani prazdneho slotu
+        from_slot = self.selected_slot_team_management_buffer
+        to_slot   = self.selected_slot_team_management
 
+        if to_slot[1] >0 and from_slot[1] >0 : # slot hracu
 
+            if len(self.loaded_teams_xml [to_slot[0]] ) == 4:  # 4 = len(none)
+                # pro prazny slot teamu se vytvori sablona
+                # A = asci 65
+                self.loaded_teams_xml [to_slot[0]] = [[ chr(65 + to_slot[0] )    ,"updated","notselected"],"    ","    ","    ","    ","    "]                    #dodelat random nazev  teamu
+
+            # nastavi team na status updated => hodnoty nactene ve hre se lisi od hodnot ulozenych v xml souboru
+            self.loaded_teams_xml [to_slot[0]][0][1] = "updated"
+
+            self.loaded_teams_xml [to_slot[0]] [to_slot[1]] = copy.deepcopy(self.loaded_teams_xml [from_slot[0]] [from_slot[1]])
+
+            # player id dle datetime stamp
+            self.loaded_teams_xml [to_slot[0]] [to_slot[1]] [1] = time.strftime("%d%m%H%M%S")
+
+            # create model
+            main_path = os.path.abspath(os.getcwd())
+
+            os.chdir("Teams")
+            os.chdir("Home")
+            # vytvoreni modelu dle 'skills' hrace, pocet vstupu neural network
+            model = create_model(   self.loaded_teams_xml [to_slot[0]] [to_slot[1]][3]   )
+            # ulozeni dle hracova ID, date stampt ktery zaruci ze model se neulozi duplikovany                                                                    # nebude konstanta
+            model.save( self.loaded_teams_xml [to_slot[0]] [to_slot[1]] [1]  + ".h5")
+
+            os.chdir(main_path)
+
+        self.selected_slot_team_management_buffer = [-1,-1] # reset bufferu
+
+    def can_edit_player(self):
+        player_selected = False
+        team_index = self.selected_slot_team_management[0]
+        player_index = self.selected_slot_team_management[1]
+        if  player_index > 0 and len(self.loaded_teams_xml[team_index]) == 6 : # slot ma ulozeny team, je vybran hrac
+            if self.loaded_teams_xml [team_index][player_index] != "    " : # slot hrace neni prazdny
+                player_selected = True
+        return player_selected
+
+    def edit_player_position(self,new_position):
+        team_index = self.selected_slot_team_management[0]
+        player_index = self.selected_slot_team_management[1]
+        if self.can_edit_player() == True :
+            self.loaded_teams_xml [team_index][0][1] = "updated"
+            if new_position == "GK":
+                self.loaded_teams_xml [team_index][player_index][2] = "GK"
+            else:
+                self.loaded_teams_xml [team_index][player_index][2] = "test "
+
+    def reset_selected_slot_team_management(self):
+        self.selected_slot_team_management = [-1,-1]
+        self.selected_slot_team_management_buffer = [-1,-1]
+
+    # ulozi team do xml
+    def save_team_from_teammngmt_table(self):
+        all_players_check = 1 # kontrola hrac x5 v teamu jinak se team neulozi
+        team_index = self.selected_slot_team_management[0]
+        player_index = self.selected_slot_team_management[1]
+        checked_team = self.loaded_teams_xml[team_index]
+
+        if checked_team != "none": #pokud prazdny slot metoda nic nevykona
+            for check_team_loop in range (1,5):
+                if len(checked_team [check_team_loop] ) == 4:                                       # 4 = len(none)   opakovani kodu zlepsit
+                    all_players_check = 0
+
+            if all_players_check == 1 and player_index == 0: #oznacen je team ne hrac
+                # potvrdi ulozeni teamu
+                self.loaded_teams_xml[team_index][0][1] = "original"
+                main_path = os.path.abspath(os.getcwd())
+
+                os.chdir("Teams")
+                os.chdir("Home")
+
+                new_path = os.path.abspath(os.getcwd())
+                create_xml_file(  checked_team      ,new_path)
+                os.chdir(main_path)
+
+    # vypocita slot z team management tabulky z souradnic mysi
+    def calculate_slot_index(self,position_clicked,The_game_window):
+
+        # hodnoty musi by ulozeny v 'window' aby slo vypocitat polohu mysi => spustit metodu/funkci
+        lines = The_game_window.team_detail_lines
+        column_width = The_game_window.mngmt_column_width
+        teams_on_page = The_game_window.mngmt_teams_on_page
+        text_ratio = The_game_window.mngmt_text_ratio
+        shift_from_menu = The_game_window.mngmt_shift_from_menu
+
+        # hranice tabulky teamu
+        table_top = The_game_window.heading_shift
+        table_left = shift_from_menu + The_game_window.game_menu_x_end
+        table_bottom = table_top + text_ratio * lines * The_game_window.menu_line_spacing
+        table_right = table_left + teams_on_page * column_width
+
+        if position_clicked[0] > table_left and position_clicked[0] < table_right:
+            if position_clicked[1] > table_top and position_clicked[1] < table_bottom:
+                self.selected_slot_team_management[0] =  int( (position_clicked[0] - table_left ) // column_width )
+                self.selected_slot_team_management[1] =  int ( (position_clicked[1] - table_top ) // (text_ratio * The_game_window.menu_line_spacing ) )
+    '''
+    # nacte teamy z slozky z predchozich her
+    def save_H_team_available_to_list (self,new_teams):
+        self.H_teams_available_list = new_teams
+                                                                                                #metody smazat nepouzite
+    def save_A_team_available_to_list (self,new_teams):
+        self.A_teams_available_list = new_teams
+    '''
+
+    # zmeni team na selected ,pro vyber teamu pro hru
+    def choose_team_from_selection(self):
+        team = self.selected_slot_team_management
+
+        # dvakrat vybrany team
+        if len(self.loaded_teams_xml[team]) == 6:
+            #team neni vybran
+            if self.loaded_teams_xml[team][0][2] == "notselected" and self.loaded_teams_xml[team][0][1] == "original":
+                self.loaded_teams_xml[team][0][2] = "selected"
+            else:
+                self.loaded_teams_xml[team][0][2] = "notselected"
 
 
 #--------------------------------------------------------------------------------------------class reff
-
+# trida rozhodciho
 class reff ():
-    def __init__(self,new_position):
-        self.position = new_position
-    radius = 15
-    lab_mode_b = 1
-    game_type = 0
-    selected_b = False
-    score  = [0,0]
-    time  = 0
-    #mtds
-    color_check  = 0
+    def __init__(self):
+            self.coach_team_A = class_coach("Home")                # rozhodci ma prehled o cele hre i o trenerech
+            self.coach_team_B = class_coach("Away")
+
+    position = [0,0]
+    teams_for_game  = [" "," ","H","AI"]    # oznacene 2 teamy pro hru a jejich nastaveni
+    radius = 15                                 # velikost
+    #lab_mode_b = 1                              # laboratory mode, odemkne nektera nastaveni
+    game_type = "none"                          # typ hry: pause/match/none
+    selected_b = False                          # ukazatel zda je ingamer oznaceny                      zkontroluj ,mely by byt uz z ingamer tridy!!
+    score  = [0,0]                              # pocitadlo golu
+    time  = 0                                   # odpocet casu
+    color_check  = 0                            # hodnoty pro nastaveni hry zatim epouzito
     set_color  = 0
-    teams_for_game  = 0
-    was_clicked  = 0
-    stop_game  = 0
-    pause_game   = 0
-    team_type = "neutral"
-    coach_team_A = "notSpecified"
-    coach_team_B = "notSpecified"
+    was_clicked  = 0                            # reff byl oznacen pri hre
+    #stop_game  = 0                                                                                            # ? uzito ??
+    #pause_game   = 0                           # puse pro zapocatou hru
+    team_type = "neutral"                       # ???  zkontroluj
+    H_teams_available_list = []                 # home teams   ASI NENI treba pouzit list vsech teamu co sou k dispozici (loaded_teams_xml)
+    A_teams_available_list = []                 # away teams  ASI NENI TREBA
+    list_of_ingamers = [ ball()         ]    # ball+ players
 
 
+    def set_teams_type_for_game(self,type):
+        self.teams_for_game[2] = "AI"
+        self.teams_for_game[3] = "AI"
+
+        if type == "H/AI":
+            self.teams_for_game[2] ="H"
+        elif type == "AI/H":
+            self.teams_for_game[3] ="H"
+        elif type == "H/H":                    # pouze pro manualni staticky trening
+            self.teams_for_game[2] = "H"
+            self.teams_for_game[3] = "H"
+
+    def reset_teams_buffer_for_game(self):
+        self.teams_for_game  = [" "," ","AI","H"]
+        for teams_reset_loop  in range (0,12):
+            if len(self.loaded_teams_xml [teams_reset_loop] ) != 4:  # 4 = len(none)
+                if self.loaded_teams_xml[teams_reset_loop][0][2] == "selected" :
+                    self.loaded_teams_xml[teams_reset_loop][0][2] = "notselected"
+
+
+    # povrzeni teamu do treningu
+    def start_training(self):
+        # trening lze zacit pokud jso oznaceny sloty s existujicimi teamy (lze vybrat trening i teamu sama k sobe)
+        #    => slot nesmi byt prazdny nebo staus jiny nez original
+        # teamy maji status original => nemaji zmenu ktera neni ulozena, maji 5 ulozenych hracu
+        # vybran team a hrac (hracuv team je automaticky vybran jako druhy pro trening)
+
+        # prvni index je team , druhy je hrac
+        # priklad  index_team_a =[0,0]  je oznacen team 0 ,  [1,2]  znamena team na indexu 1 a jeho hrac na indexu 2
+        index_team_a = self.selected_slot_team_management
+        index_team_b = self.selected_slot_team_management_buffer
+
+        player_selected_ID = "none"
+        start_training_check = False
+
+        # oba teamy existuji
+        if len(self.loaded_teams_xml [index_team_a[0]]) != 4  and  \
+            len(self.loaded_teams_xml [index_team_b[0]] ) != 4:  # 4 = len("none")
+
+            # oznacen hrac a team
+            if  (index_team_a[1] == 0 or index_team_b[1] == 0)  and \
+                (index_team_a[1] != 0 or index_team_b[1] != 0):
+
+                # status teamu je original
+                if  self.loaded_teams_xml[index_team_a[0]][0][1] == "original" and \
+                    self.loaded_teams_xml[index_team_b[0]][0][1] == "original"  :                               #zkontroluj podmnku
+
+                    #player # ID
+                    if index_team_a[1] != 0:
+                        player_selected_ID = self.loaded_teams_xml[index_team_a[0]][index_team_a[1]][1]
+                    else:
+                        player_selected_ID = self.loaded_teams_xml[index_team_b[0]][index_team_b[1]][1]
+
+                    start_training_check = True
+
+                    self.teams_for_game[0] = self.loaded_teams_xml[index_team_a[0]][0][0]
+                    self.teams_for_game[1] = self.loaded_teams_xml[index_team_b[0]][0][0]
+
+        #  ??? vyuzit self.teams_for_game[0] = "Ooo,Error :("      pro informaci hraci o spatnem vstupu  , udelat print funkci pro error
+
+        return [start_training_check,player_selected_ID  ]
+
+    # spocte vsechny selected teams
+    def count_selected_teams(self):
+        teams_selected = 0
+        # kontrola ze 2 teamy jsou oznaceny
+        for check_loop in range (0,len(self.loaded_teams_xml)):
+            # team slot neni prazdny len("none") = 4
+            if len(self.loaded_teams_xml[check_loop]) == 6:
+                if self.loaded_teams_xml[check_loop][0][2] == "selected":
+                    teams_selected = teams_selected + 1
+        return  teams_selected
+
+    # zkontroluje zda jsou oznaceny pouze dva teamy
+    def check_selected_teams(self):
+        teams_selected = self.count_selected_teams()
+
+        # ulozi 2x jmeno vybranych teamu
+        if  teams_selected == 2 or teams_selected == 1:
+            self.teams_for_game[0] = " "
+            self.teams_for_game[1] = " "
+            saving_index = 0
+            for save_loop in range (0,len(self.loaded_teams_xml)):
+                if len(self.loaded_teams_xml[save_loop]) == 6:
+                    if self.loaded_teams_xml[save_loop][0][2] == "selected":
+                        self.teams_for_game[saving_index] = self.loaded_teams_xml[save_loop][0][0]
+                        saving_index = saving_index + 1
+
+        elif teams_selected > 2:
+            self.teams_for_game[0] = "2!"
+            self.teams_for_game[1] = "1!"
+
+        elif  teams_selected == 0:
+            self.teams_for_game[0] = " "
+            self.teams_for_game[1] = " "
+
+
+    # kontrola pro vstreleny gol
     def goal_check(self,The_field,The_ball):
-
         decision_goal = 0
-
 
         goal_top    = The_field.field_bl_corner[1] - The_field.field_height/2 - The_field.goals_height/2
         goal_bottom = The_field.field_bl_corner[1] - The_field.field_height/2 + The_field.goals_height/2
@@ -750,66 +493,52 @@ class reff ():
         field_right  = The_field.field_bl_corner[0] + The_field.field_width
         field_left   = The_field.field_bl_corner[0]
 
-
-        if debug_mode == 1:
+        if False:
             print (' .goal_top',goal_top)
             print ('goal_bottom',goal_bottom)
             print ('field_rightt',field_right)
             print ('field_left',field_left)
             print ('ball',The_ball.position)
+            print("game_fieldwth"  ,The_field.field_width )
+            print("game_fieldhght"  ,The_field.field_height )
 
-
-
+        # kontrola pozice mice ku branam
         if The_ball.position[1] - The_ball.radius < goal_bottom  and The_ball.position[1]  + The_ball.radius > goal_top:
 
             # rozdil 1 - mic se zastavi pixel pred carou
             if The_ball.position[0] - The_ball.radius - 1  <= field_left  :
                 self.score [0] = self.score [0]  + 1
-                self.game_reset (game_field,The_ball)
+                self.game_reset (The_field,The_ball)
 
             elif The_ball.position[0] + The_ball.radius + 1  >= field_right :
                 self.score [1] = self.score [1]  + 1
-                self.game_reset (game_field,The_ball)
+                self.game_reset (The_field,The_ball)
 
 
-
-
-
-
-
+    # resetovani mice
     def game_reset (self,game_field,The_ball):
         The_ball.speed = 0
-        The_ball.set_position(int(game_field.field_bl_corner[0]  + game_field.field_width / 2 ), \
-                                        int(game_field.field_bl_corner[1]  - game_field.field_height / 2 )  )
+        The_ball.color = white
+        The_ball.set_position    (random.randint( 400,800 ), random.randint(100 ,500 ) )
 
 
-
-    def draw_ingamer (self,game_window):                                            #zmen na draw ref??
+    def draw_ingamer (self,game_window):                                                                      #zmen na draw ref??
         if self.selected_b == True:
             color = yellow_item_selected
         else :
             color = white
 
-
+        # Rozhodci se vykresluje jako bilo-cerny kruh
+        # pomocny vypocet
         rectangle_for_drawing = [ self.position[0] - self.radius , self.position[1] - self.radius ,2 * self.radius , 2* self.radius ]
-
         # arc(surface, color, rect, start_angle, stop_anglenline)
-        pygame.draw.arc(game_window.surface, color, rectangle_for_drawing, math.radians (90) ,  math.radians (180), self.radius)
-        pygame.draw.arc(game_window.surface, color, rectangle_for_drawing, math.radians (270) ,  math.radians (360), self.radius)
+        pygame.draw.arc(game_window.surface, color, rectangle_for_drawing, radians (90) ,  radians (180), self.radius)
+        pygame.draw.arc(game_window.surface, color, rectangle_for_drawing, radians (270) ,  radians (360), self.radius)
         pygame.draw.circle(game_window.surface, color, ( self.position[0] ,self.position[1]) ,self.radius, 1)
-    '''
-    def is_selected_by_click (self,position_clicked):
-        x_limits = [  self.position[0] - self.radius   ,  self.position[0] + self.radius    ]
-        y_limits = [  self.position[1] - self.radius   ,  self.position[1] + self.radius    ]
 
-        if f_is_clikced_on_circle(x_limits,y_limits,position_clicked) == True:
-            self.selected_b = True
-        else:
-            self.selected_b = False
-    '''
 
-    def set_selected (self,new_status):                                                                                         #reff potomek ingamer??? opakuje se dost metod pri reff jako nezdedena trida
-        #hrac muze byt oznaceny pouze pokud je v teamu uzivatele
+    def set_selected (self,new_status):                                                                              #reff potomek ingamer??? opakuje se dost metod pri reff jako nezdedena trida
+        # hrac muze byt oznaceny pouze pokud je v team_type "human"
         if new_status == True :
             if self.team_type != "AI":
                 self.selected_b = True
@@ -827,146 +556,126 @@ class reff ():
             return False
 
 
-
     def read_selected (self):
         return self.selected_b
 
+    # vygenerovani zapasu / treningu
+    def start_match (self,The_game_window,The_field,called_at_begining):                           # potreba?called_at_begining ?
+        #print ("startmatch",self.game_type )
+
+        # nelze spustit vice her
+        if self.game_type != "none" :
+            return
+
+        self.game_type = "match"
+
+        # pro trening
+        vertical_max    = The_field.field_bl_corner [1]
+        vertical_min    = The_field.field_bl_corner [1] - The_field.field_height
+        horizontal_min  = The_field.field_bl_corner [0]
+        horizontal_max  = The_field.field_bl_corner [0] + The_field.field_width
+        team_A_slot = self.teams_for_game [0] # ulozi jmeno teamu
+        team_B_slot = self.teams_for_game [1] # ulozi jmeno teamu
+
+        # set pro hru nastaveni pozice rozhotciho  amice pro zacatek hry
+        self.position = [  horizontal_max / 2 , vertical_max + self.radius   ]
+        self.list_of_ingamers[0].position = [ horizontal_max / 2,vertical_max / 2   ]
+                                                                                                        # pridat kontrolu teamu,
+
+        # input ma tvar : [team_name,5x [pl_name, pl_ID,pl_position,trening_type,trening_time]]
+        shift_x = The_field.field_bl_corner[0] + The_field.field_width*0.2
+        team_switch = 0
+        ingamer_saving_loop = 2 # 2 protoze index 0 je eff index 1 je ball
+        for teams_lops in range (0,12):    # vybere 'selected' teamy z listu vsech teamu
+
+            if self.loaded_teams_xml [teams_lops][0][0] == team_A_slot or self.loaded_teams_xml [teams_lops][0][0] == team_B_slot:
+                shift_y = The_field.field_bl_corner[1] * 0.3
+                for players_loop in range (1,6):   # index 0 je nazev teamu
+                    # vypsani teamu a hracu,prvni column je pro popisky
+                    Teams_path = os.path.abspath(os.getcwd())
+
+                    if teams_lops < 10 :
+                        full_path = Teams_path + "\Teams\Home\\"
+                    else:
+                        full_path = Teams_path + "\Teams\Away\\"
+
+                    new_player_ID = self.loaded_teams_xml[teams_lops][players_loop][1]
+                    new_player = player ([int(shift_x),int(shift_y)])
+                    new_player.path_target = 180
+                    new_player.game_status = "game"
+                    new_player.set_path_target(180)
+                    new_player.ID = new_player_ID
+
+                    # nastaveni v zavislosti na teamu
+                    if team_switch == 0:
+                        new_player.team_type = self.teams_for_game[2]
+                        new_player.team = "A"
+                        new_player.field_site = "left"
+                        new_player.set_coach(self.coach_team_A)
+                        new_player.set_graphic("player_a.png")
+                    else:
+                        new_player.team_type = self.teams_for_game[3]
+                        new_player.team = "B"
+                        new_player.color = red
+                        new_player.field_site = "right"
+                        new_player.set_coach(self.coach_team_B)
+                        new_player.set_graphic("player_b.png")
+
+                    new_player.model= load_model( full_path +  new_player_ID + ".h5")   # zmenin na file dle ID hrace
+                    '''
+                    x = 1 #pro testy
+                    if x == 1:
+                        thread_new_player =  Thread (target = new_player.move_round   ,args =  (The_game_window,The_field,list_of_ingamers))
+                        thread_new_player.start()
+                    '''
+                    shift_y = shift_y + The_field.field_height * 0.1
+                    # vytvareni teamu po spusteni hry / vytvareni teamu prepisuje predchozi hru
+                    if len(self.list_of_ingamers) == 11:
+                        #print ("lllisisisi",list_of_ingamers )
+                        self.list_of_ingamers[ingamer_saving_loop] = new_player
+                        ingamer_saving_loop = ingamer_saving_loop + 1
+                    else:
+                        #print ("lllisisisi2222",list_of_ingamers )
+                        #print (len(list_of_ingamers))
+                        self.list_of_ingamers.append(new_player)
+
+                team_switch = 1
+                shift_x = The_field.field_bl_corner[0] + The_field.field_width*0.8
+
+        thread_A_team =  Thread (target = self.coach_team_A.move_around_team   ,args =  (The_game_window,The_field,self.list_of_ingamers))
+        thread_A_team.start()
+        thread_B_team =  Thread (target = self.coach_team_B.move_around_team   ,args =  (The_game_window,The_field,self.list_of_ingamers))
+        thread_B_team.start()
+
+    # nastavi novy game_status sobe
+    def set_game_status_to_self(self,new_status):
+        self.game_type = new_status
+
+    # nastavi  game_status  vsem hracum
+    def set_game_status_to_players(self):
+        for no_of_ingamers in range (1,len(self.list_of_ingamers)):
+            self.list_of_ingamers[no_of_ingamers].game_status = self.game_type
+
+    def pause_game(self,The_game_window,The_field):                                                    #   potrebuje vsechny vstupy??
+        self.set_game_status_to_self("pause")
+        self.set_game_status_to_players()
+
+
+    def unpause_game(self,The_game_window,The_field):
+        self.set_game_status_to_self("game")
+        self.set_game_status_to_players()
+        thread_A_team =  Thread (target = self.coach_team_A.move_around_team   ,args =  (The_game_window,The_field,self.list_of_ingamers))
+        thread_A_team.start()
+        thread_B_team =  Thread (target = self.coach_team_B.move_around_team   ,args =  (The_game_window,The_field,self.list_of_ingamers))
+        thread_B_team.start()
 
 
 
-    def start_test_match (self,The_game_window,The_field,list_of_ingamers,called_at_begining):
-        vertical_max   =       The_field.field_bl_corner [1]
-        vertical_min  =       The_field.field_bl_corner [1] - The_field.field_height
-        horizontal_min  =      The_field.field_bl_corner [0]
-        horizontal_max  =     The_field.field_bl_corner [0] + The_field.field_width
 
-        The_player_no_A1 = player ([random.randint(horizontal_min, horizontal_max),random.randint( vertical_min, vertical_max)])
-        The_player_no_A2 = player ([random.randint(horizontal_min, horizontal_max),random.randint( vertical_min, vertical_max)])
-        The_player_no_A1.path_target = 180
-        The_player_no_A2.path_target = 180
-        The_player_no_A1.team_type = "H"
-        The_player_no_A2.team_type = "H"
-        The_player_no_A1.team = "A"
-        The_player_no_A2.team = "A"
-        The_player_no_A1.game_status = "game"
-        The_player_no_A2.game_status = "game"
-        The_player_no_A1.field_site = "left"
-        The_player_no_A2.field_site = "left"
-        The_player_no_A1.set_coach(self.coach_team_A)
-        The_player_no_A2.set_coach(self.coach_team_A)
+    '''
+    def restart_players(self,The_game_window,The_field,list_of_ingamers):                   #zkontroluj je pouzito
+        self.start_match (The_game_window,The_field,list_of_ingamers,False)
+    '''
 
-        if called_at_begining == True:
-            list_of_ingamers.append(The_player_no_A1)
-            list_of_ingamers.append(The_player_no_A2)
-        else:
-            list_of_ingamers[2] = The_player_no_A1
-            list_of_ingamers[3] = The_player_no_A2
-
-
-        #print("pth targgget",The_player_no_A2.path_target)
-
-        The_player_no_B1 = player ([random.randint(horizontal_min, horizontal_max),random.randint( vertical_min, vertical_max)])
-        The_player_no_B2 = player ([random.randint(horizontal_min, horizontal_max),random.randint( vertical_min, vertical_max)])
-        The_player_no_B1.path_target = 180
-        The_player_no_B2.path_target = 180
-        The_player_no_B2.team_type = "H" #"AI"
-        The_player_no_B1.team_type = "H" #"AI"
-        The_player_no_B2.team = "B"
-        The_player_no_B1.team = "B"
-        The_player_no_B1.game_status = "game"
-        The_player_no_B2.game_status = "game"
-        The_player_no_B1.color = red
-        The_player_no_B2.color = red
-        The_player_no_B1.field_site = "right"
-        The_player_no_B2.field_site = "right"
-        The_player_no_B1.set_coach(self.coach_team_B)
-        The_player_no_B2.set_coach(self.coach_team_B)
-
-        if called_at_begining == True:
-            list_of_ingamers.append(The_player_no_B1)
-            list_of_ingamers.append(The_player_no_B2)
-        else:
-            list_of_ingamers[4] = The_player_no_B1
-            list_of_ingamers[5] = The_player_no_B2
-
-
-        '''
-        #testovani
-        thread_a1 =  threading.Thread (target = The_player_no_A1.move_round   ,args =  (The_game_window,The_field,list_of_ingamers))
-        thread_a1.start()
-        thread_b1 =  threading.Thread (target = The_player_no_B1.move_round   ,args =  (The_game_window,The_field,list_of_ingamers))
-        thread_b1.start()
-        '''
-
-    def restart_players(self,The_game_window,The_field,list_of_ingamers):
-        self.start_test_match (The_game_window,The_field,list_of_ingamers,False)
-
-
-    def draw_data_lower_menu (self,The_game_window,The_field,list_of_ingamers):
+    def draw_data_lower_menu (self,The_game_window,The_field):                           # zkontroluj pro je metoda dyz se muze vykreslovat jak ostatni
         f_print_score(self.score,The_game_window,The_field)
-
-
-
-
-
-#-----------------------------------------FUNKCE--------------------------------------------------------------
-
-def pythagoras_distance (location_1,location_2):
-    ingamer_adjescent =  abs (location_1[0]  -  location_2[0])
-    ingamer_opposite =  abs (location_1[1] -  location_2[1])
-    ingamer_hypotensue = math.sqrt(ingamer_adjescent **2 + ingamer_opposite **2)
-
-    return ingamer_hypotensue
-
-
-
-def f_is_clikced_on_circle(x_limits,y_limits,position_clicked):
-    test = False
-    if x_limits[0] <  position_clicked[0] and x_limits[1] > position_clicked[0]:
-        if  y_limits[0] <  position_clicked[1] and y_limits[1] > position_clicked[1]:
-            test = True
-
-    return test
-
-
-
-
-def draw_trening_field (game_window,game_field):                                                                               #POUZIVAT???? bude chybet 'sector' hriste pro hracovu polohu
-    field_corners = [0,0,0,0]
-
-    # hriste
-    field = pygame.draw.rect(game_window.surface, green_field , (game_field.field_bl_corner[0] ,game_field.field_bl_corner[1] -game_field.field_height ,  \
-                                                    game_field.field_width,game_field.field_height  )   ,  1)
-    # 2x brany
-    pygame.draw.rect(game_window.surface, white , (game_field.field_bl_corner[0] - game_field.goals_width  ,game_field.field_bl_corner[1] - game_field.field_height/2 - game_field.goals_height /2 ,  \
-                                                    game_field.goals_width,game_field.goals_height  )   ,  1)
-
-
-
-def draw_5aside_field (game_window,game_field):
-    field_corners = [0,0,0,0]
-
-    # hriste
-    field = pygame.draw.rect(game_window.surface, green_field , (game_field.field_bl_corner[0] ,game_field.field_bl_corner[1] -game_field.field_height ,  \
-                                                    game_field.field_width,game_field.field_height  )   ,  2)
-    # 2x brany
-    pygame.draw.rect(game_window.surface, white , (game_field.field_bl_corner[0] - game_field.goals_width  ,game_field.field_bl_corner[1] - game_field.field_height/2 - game_field.goals_height /2 ,  \
-                                                    game_field.goals_width,game_field.goals_height  )   ,  1)
-    pygame.draw.rect(game_window.surface, white , (game_field.field_bl_corner[0] + game_field.field_width  ,game_field.field_bl_corner[1] - game_field.field_height/2 - game_field.goals_height /2 ,  \
-                                                    game_field.goals_width,game_field.goals_height  )   ,  1)
-
-    # pulici cara hriste
-    pygame.draw.lines(game_window.surface, grey_lines, True, ((game_field.field_bl_corner[0] + game_field.field_width /2 ,field.top ) ,  \
-                                                        ( game_field.field_bl_corner[0] + game_field.field_width /2,field.bottom )), 1)
-
-    # 2x stred hriste
-    pygame.draw.circle(game_window.surface, grey_lines, ( int(game_field.field_bl_corner[0] + game_field.field_width /2) ,int(field.top + game_field.field_height/2)) , 6, 1)
-    pygame.draw.circle(game_window.surface, grey_lines, ( int(game_field.field_bl_corner[0] + game_field.field_width /2) ,int(field.top + game_field.field_height/2)) , 50, 1)
-
-
-    # sektory hriste - orintace hracu v poli
-    if game_field.lab_mode_b == 1:
-            pygame.draw.rect(game_window.surface, darkBlue , (game_field.field_bl_corner[0] + game_field.field_width /3   ,field.top + 5,  \
-                                                            game_field.field_width /3  ,game_field.field_height -10  )   ,  1)
-            pygame.draw.rect(game_window.surface, darkBlue , (field.left +5 ,game_field.field_bl_corner[1] - game_field.field_height * 2/3,  \
-                                                            game_field.field_width -10 ,game_field.field_height /3  )   ,  1)
