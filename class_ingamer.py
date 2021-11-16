@@ -22,7 +22,7 @@ class ingamer(pygame.sprite.Sprite):
     step = 2
     destination_move = [0,0]                                                                            #uzito?
     #lab_mode_b = 1
-    color = blue
+    color = BLUE
     collision_allowed_b = False
     selected_b = False
     team_type = "Neutral"          # H - human ,  AI , Neutral for ball and reff
@@ -203,9 +203,9 @@ class ingamer(pygame.sprite.Sprite):
             vision_opposite = int(view * self.velocity[1]  * 0.8)
 
         if self.selected_b == True:
-            vision_color = red
+            vision_color = RED
         else:
-            vision_color = green
+            vision_color = GREEN
 
         pygame.draw.lines(game_window.surface, vision_color, True, ((self.rect.center[0] ,self.rect.center[1] ), \
                                 (self.rect.center[0] + vision_adjescent ,self.rect.center[1] + vision_opposite  )), 1)
@@ -240,7 +240,7 @@ class ingamer(pygame.sprite.Sprite):
         x_limits = [  self.rect.center[0] - self.radius   ,  self.rect.center[0] + self.radius    ]
         y_limits = [  self.rect.center[1] - self.radius   ,  self.rect.center[1] + self.radius    ]
 
-        if f_is_clikced_on_circle(x_limits,y_limits,position_clicked) == True:
+        if is_clikced_on_circle(x_limits,y_limits,position_clicked) == True:
             return True
         else:
             return False

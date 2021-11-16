@@ -11,11 +11,8 @@ from numpy import max
 import platform
 from platform import system
 
-#------------------------------------------------------------------------------
-
 def get_os():
     os = platform.system()
-    #Windows
     return os
 
 def get_path_home_folder():
@@ -44,12 +41,10 @@ def sigmoid(x):
         x = -500
     calculated =  1 / (1 + exp(-x))
     return calculated
-
-# ! exp a max jsou z numpy ne z math modulu !!
+                                                                                            # ! exp a max jsou z numpy ne z math modulu !!
 def softmax(x):
     e_x = exp(x - max(x))
     return e_x / e_x.sum()
-
 
 def load_data(file_name):
     data_list=[]
@@ -84,11 +79,9 @@ def train_model(train_data,train_labels,test_data,test_labels,model_ID_h5):
     model.fit(train_data,train_labels,epochs=5)
     model.save(path +  model_ID_h5  + ".h5")
 
-
 def load_model_from_5h(new_model):
     model = load_model(new_model)
     return model
-
 
 def proces_reinforsment_data(player_ID, data_trening, data_labels):
     #print ("data_trening",data_trening )

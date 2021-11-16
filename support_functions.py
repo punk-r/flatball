@@ -1,28 +1,26 @@
 import pygame
-from math import sqrt, exp
-from math import floor , trunc ,atan
-from math import cos, sin , radians ,degrees
+from math import sqrt, exp, floor, trunc, atan, cos, sin, radians, degrees
 from enum import Enum
 
 # barvy
-red = (255,0,0)
-green = (0,255,0)
-blue = (0,0,255)
-darkBlue = (0,0,128)
-white = (255,255,255)
-black = (0,0,0)
-pink = (255,200,200)
-grey = (192,192,192)
-grey_lines = (102,102,102)
-green_field =(0, 128, 43)
-yellow_item_selected = (255, 255, 153)
-grey_buttons = (64,64,64)
+RED = (255,0,0)
+GREEN = (0,255,0)
+BLUE = (0,0,255)
+DARK_BLUE = (0,0,128)
+WHITE = (255,255,255)
+BLACK = (0,0,0)
+PINK = (255,200,200)
+GREY = (192,192,192)
+GREY_LINES = (102,102,102)
+GREEN_FIELD =(0, 128, 43)
+YELLOW_SELECTED_ITEMS = (255, 255, 153)
+GREY_BUTTONS = (64,64,64)
 
 debug_mode = 0
 debug_mode2 = 0
 
 # screen menum
-class screens(Enum):
+class Screens(Enum):
     welcome = 0
     coach = 1
     teammanagement = 2
@@ -51,28 +49,28 @@ class screens(Enum):
     error = 404
 
 '''
-screens.ingame.value
+Screens.ingame.value
 '''
 
 # game status menum
-class game_status(Enum):
+class GameStatus(Enum):
     nogame =  0
     playing = 1
     paused  = 2
     set = 3
 
 # game type menum
-class game_type(Enum):
+class GameType(Enum):
     game =  0
     paused = 1
     mantraining = 3
     autotraining = 4
 
-class saving_type(Enum):
+class SavingType(Enum):
     empty_team_slot =  0
     empty_player_slot = 1
 
-class player_type(Enum):
+class PlayerType(Enum):
     GK =  1
     leftdefender = 2
     rightdefender = 3
@@ -97,7 +95,7 @@ def player_type_text(No_type):
 
 #-----------------------------------------FUNKCE--------------------------------------------------------------
 
-def f_calculate_sector(call_No,site,position_in,The_field_size,The_field_start):
+def calculate_sector(call_No,site,position_in,The_field_size,The_field_start):
     # na kolik casti se hriste deli
     ratio = 3
     # hrsite je v hre posunuto od souradnic [0,0] ,proto tento posun musime odcist
@@ -120,17 +118,17 @@ def f_calculate_sector(call_No,site,position_in,The_field_size,The_field_start):
             # + 1 ,zacina indexem 1 ne 0 jako pole
             data[loop] = str(data[loop]+1)
 
-    new_field_size = [int(The_field_size[0] / ratio) , int(The_field_size[1] / ratio)]
+    new_field_size = [int(The_field_size[0] / ratio), int(The_field_size[1] / ratio)]
     new_position_in =[int( position_in[0] + player_position[0]//sector_size[0] * sector_size[0]), \
-                       int(position_in[1] -((2- player_position[1]//sector_size[1]) * sector_size[1]))   ]
-    new_field_start =[ int(The_field_start[0] + player_position[0]//sector_size[0] * sector_size[0]), \
-                      int( The_field_start[1] -((2- player_position[1]//sector_size[1]) * sector_size[1]))    ]
+                       int(position_in[1] -((2- player_position[1]//sector_size[1]) * sector_size[1]))]
+    new_field_start =[int(The_field_start[0] + player_position[0]//sector_size[0] * sector_size[0]), \
+                      int( The_field_start[1] -((2- player_position[1]//sector_size[1]) * sector_size[1]))]
 
     # mezni podminka pro rekurzi
     if call_No == 0:
         sector = data[0] + data[1]
     else:
-        sector = data[0] + data[1] + "." + f_calculate_sector(call_No-1,site,position_in,new_field_size,new_field_start)
+        sector = data[0] + data[1] + "." + calculate_sector(call_No - 1,site,position_in,new_field_size,new_field_start)
     return sector
 
 
@@ -148,6 +146,7 @@ def center_button_name(original_name):
 
     return corrected_name
 
+
 # vypocet vzdalenosti
 def pythagoras_distance (location_1,location_2):
     ingamer_adjescent =  abs (location_1[0]  -  location_2[0])
@@ -155,13 +154,15 @@ def pythagoras_distance (location_1,location_2):
     ingamer_hypotensue = sqrt(ingamer_adjescent **2 + ingamer_opposite **2)
     return ingamer_hypotensue
 
+
 # funkce vypocte zda souradnice oznaceni mysi jsou v oznacene plose-kruhu
-def f_is_clikced_on_circle(x_limits,y_limits,position_clicked):                                     # zkontroluj opakovani kodu v metodach pro tlacitka
+def is_clikced_on_circle(x_limits,y_limits,position_clicked):                                     # zkontroluj opakovani kodu v metodach pro tlacitka
     test = False
     if x_limits[0] <  position_clicked[0] and x_limits[1] > position_clicked[0]:
         if  y_limits[0] <  position_clicked[1] and y_limits[1] > position_clicked[1]:
             test = True
     return test
+
 
 # zona hriste pro trening hrace napr brankare ,utocnika
 # EXTRA
@@ -169,46 +170,62 @@ def draw_trening_field (game_window,game_field):
     field_corners = [0,0,0,0]
 
     # hriste
-    field = pygame.draw.rect(game_window.surface, green_field , (game_field.field_bl_corner[0] ,game_field.field_bl_corner[1] -game_field.field_height ,  \
-                                                    game_field.field_width,game_field.field_height  )   ,  1)
+    field = pygame.draw.rect(game_window.surface, GREEN_FIELD, \
+                                (game_field.field_bl_corner[0], game_field.field_bl_corner[1] - game_field.field_height, \
+                                 game_field.field_width, game_field.field_height), 1)
     # 2x brany
-    pygame.draw.rect(game_window.surface, white , (game_field.field_bl_corner[0] - game_field.goals_width  ,game_field.field_bl_corner[1] - game_field.field_height/2 - game_field.goals_height /2 ,  \
-                                                    game_field.goals_width,game_field.goals_height  )   ,  1)
+    pygame.draw.rect(game_window.surface, white, \
+                        (game_field.field_bl_corner[0] - game_field.goals_width, \
+                         game_field.field_bl_corner[1] - game_field.field_height/2 - game_field.goals_height /2 , \
+                         game_field.goals_width, game_field.goals_height), 1)
 
-
+                                                                                                                                # 2x brany  ??? chybi brana?????
 # vykresleni hriste
 def draw_5aside_field (game_window,game_field,screen_ID):
-
     field_corners = [0,0,0,0]
 
     # hriste
-    field = pygame.draw.rect(game_window.surface, green_field , (game_field.field_bl_corner[0] ,game_field.field_bl_corner[1] -game_field.field_height ,  \
-                                                    game_field.field_width,game_field.field_height  )   ,  2)
+    field = pygame.draw.rect(game_window.surface, GREEN_FIELD, \
+                                (game_field.field_bl_corner[0], game_field.field_bl_corner[1] - game_field.field_height, \
+                                 game_field.field_width, game_field.field_height), 2)
     # 2x brany
-    pygame.draw.rect(game_window.surface, blue , (game_field.field_bl_corner[0] - game_field.goals_width  ,game_field.field_bl_corner[1] - game_field.field_height/2 - game_field.goals_height /2 ,  \
-                                                    game_field.goals_width,game_field.goals_height  )   ,  1)
-    pygame.draw.rect(game_window.surface, red , (game_field.field_bl_corner[0] + game_field.field_width  ,game_field.field_bl_corner[1] - game_field.field_height/2 - game_field.goals_height /2 ,  \
-                                                    game_field.goals_width,game_field.goals_height  )   ,  1)
+    pygame.draw.rect(game_window.surface, BLUE, \
+                        (game_field.field_bl_corner[0] - game_field.goals_width,\
+                         game_field.field_bl_corner[1] - game_field.field_height/2 - game_field.goals_height/2, \
+                         game_field.goals_width,game_field.goals_height), 1)
+
+    pygame.draw.rect(game_window.surface, RED, \
+                        (game_field.field_bl_corner[0] + game_field.field_width, \
+                         game_field.field_bl_corner[1] - game_field.field_height/2 - game_field.goals_height/2, \
+                         game_field.goals_width,game_field.goals_height), 1)
 
 
-    if screen_ID == screens.ingame.value:
+    if screen_ID == Screens.ingame.value:
         # pulici cara hriste
-        pygame.draw.lines(game_window.surface, grey_lines, True, ((game_field.field_bl_corner[0] + game_field.field_width /2 ,field.top ) ,  \
-                                                            ( game_field.field_bl_corner[0] + game_field.field_width /2,field.bottom )), 1)
+        pygame.draw.lines(game_window.surface, GREY_LINES, True, \
+                            ((game_field.field_bl_corner[0] + game_field.field_width/2 ,field.top), \
+                             (game_field.field_bl_corner[0] + game_field.field_width/2,field.bottom)), 1)
 
         # 2x stred hriste
-        pygame.draw.circle(game_window.surface, grey_lines, ( int(game_field.field_bl_corner[0] + game_field.field_width /2) ,int(field.top + game_field.field_height/2)) , 6, 1)
-        pygame.draw.circle(game_window.surface, grey_lines, ( int(game_field.field_bl_corner[0] + game_field.field_width /2) ,int(field.top + game_field.field_height/2)) , 50, 1)
-
-
+        pygame.draw.circle(game_window.surface, GREY_LINES, \
+                            (int(game_field.field_bl_corner[0] + game_field.field_width/2), \
+                            int(field.top + game_field.field_height/2)), 6, 1)
+        pygame.draw.circle(game_window.surface, GREY_LINES, \
+                            (int(game_field.field_bl_corner[0] + game_field.field_width/2), \
+                            int(field.top + game_field.field_height/2)), 50, 1)
 
 
 def draw_field_sectors(game_window,game_field):
     # sektory hriste - orintace hracu v poli
-    pygame.draw.rect(game_window.surface, darkBlue , (game_field.field_bl_corner[0] + game_field.field_width /3   ,game_field.field_bl_corner[1] - game_field.field_height + 5 ,  \
-                                                    game_field.field_width /3  ,game_field.field_height -10  )   ,  1)
-    pygame.draw.rect(game_window.surface, darkBlue , (game_field.field_bl_corner[0] +5 ,game_field.field_bl_corner[1] - game_field.field_height * 2/3,  \
-                                                    game_field.field_width -10 ,game_field.field_height /3  )   ,  1)
+    pygame.draw.rect(game_window.surface, DARK_BLUE, \
+                        (game_field.field_bl_corner[0] + game_field.field_width/3, \
+                         game_field.field_bl_corner[1] - game_field.field_height + 5, \
+                         game_field.field_width /3  ,game_field.field_height - 10), 1)
+
+    pygame.draw.rect(game_window.surface, DARK_BLUE, \
+                        (game_field.field_bl_corner[0] + 5, \
+                         game_field.field_bl_corner[1] - game_field.field_height * 2/3, \
+                         game_field.field_width -10 ,game_field.field_height/3),  1)
 
 
 def draw_field_subsectors(The_game_window,game_field):
@@ -216,25 +233,152 @@ def draw_field_subsectors(The_game_window,game_field):
     field_right = game_field.field_bl_corner[0] + game_field.field_width
     field_bottom = game_field.field_bl_corner[1]
     field_left = game_field.field_bl_corner[0]
-    sub_width = game_field.field_width /9
-    sub_height = game_field.field_height /9
+    sub_width = game_field.field_width / 9
+    sub_height = game_field.field_height / 9
 
     #cross stred hriste
-    pygame.draw.lines(The_game_window.surface,  grey, True, ((game_field.field_bl_corner[0] + game_field.field_width/2, game_field.field_bl_corner[1] - game_field.field_height/2 +10 ) , \
-                                                             (game_field.field_bl_corner[0] + game_field.field_width/2, game_field.field_bl_corner[1] - game_field.field_height/2 -10 )), 1)
+    pygame.draw.lines(The_game_window.surface,  GREY, True,  \
+                        ((game_field.field_bl_corner[0] + game_field.field_width/2, \
+                         game_field.field_bl_corner[1] - game_field.field_height/2 + 10 ), \
+                         (game_field.field_bl_corner[0] + game_field.field_width/2, game_field.field_bl_corner[1] - game_field.field_height/2 - 10)), 1)
 
-    pygame.draw.lines(The_game_window.surface,  grey, True, ((game_field.field_bl_corner[0] + game_field.field_width/2 + 10, game_field.field_bl_corner[1] - game_field.field_height/2  ) , \
-                                                             (game_field.field_bl_corner[0] + game_field.field_width/2 - 10, game_field.field_bl_corner[1] - game_field.field_height/2  )), 1)
+    pygame.draw.lines(The_game_window.surface,  GREY, True, \
+                        ((game_field.field_bl_corner[0] + game_field.field_width/2 + 10, \
+                         game_field.field_bl_corner[1] - game_field.field_height/2) , \
+                         (game_field.field_bl_corner[0] + game_field.field_width/2 - 10, game_field.field_bl_corner[1] - game_field.field_height/2)), 1)
 
-    shifx = 0
+    shift_x = 0
     for column_loop in range (0,8):
-        shifty = 0
+        shift_y = 0                                                                                                                                    #???uzito
         for row_loop in range (0,8):
                 if row_loop !=2 and row_loop !=5 and column_loop !=2 and column_loop !=5 :
                     # subsektory hriste - orintace hracu v poli
-                    pygame.draw.circle(The_game_window.surface, grey_lines, ( int(field_left + sub_width + row_loop * sub_width)    , \
-                                                                    int(field_bottom - sub_height - column_loop * sub_height) ) ,1, 1)
-                shifx = shifx + 1
+                    pygame.draw.circle(The_game_window.surface, GREY_LINES, \
+                                        (int(field_left + sub_width + row_loop * sub_width), \
+                                         int(field_bottom - sub_height - column_loop * sub_height) ) ,1, 1)
+                shift_x = shift_x + 1
+
+def draw_trening_mini_filed(The_game_window,The_reff,The_field):
+    area_rectangle_player = [0,0,0,0]
+    area_rectangle_ball = [0,0,0,0]
+    field_tl_corner = [0,0] # tl = top left corner
+    field_tl_corner[0] = 20 + The_game_window.game_menu_x_end + 8*The_game_window.mngmt_column_width
+    field_tl_corner[1] = The_game_window.heading_shift + 20*  The_game_window.menu_line_spacing
+    minifield_width = 2*The_game_window.mngmt_column_width
+    minifield_height = 12*  The_game_window.menu_line_spacing
+    field_bl_corner = [field_tl_corner[0], field_tl_corner[1] + minifield_height] # bl = bottom left corner
+    minifield_rect_format = [field_tl_corner[0], field_tl_corner[1], minifield_width, minifield_height]
+
+    pygame.draw.rect(The_game_window.surface, GREEN_FIELD, \
+                                    (field_tl_corner[0], \
+                                    field_tl_corner[1], \
+                                     minifield_width, minifield_height), 2)
+
+    pygame.draw.rect(The_game_window.surface, WHITE, \
+                                    (field_tl_corner[0] + 1/3*minifield_width , \
+                                    field_tl_corner[1] + minifield_height -2  , \
+                                    minifield_width/3, 5), 1)
+
+    pygame.draw.circle(The_game_window.surface, GREY_LINES, \
+                    (int(field_tl_corner[0] + minifield_width/2), \
+                    int(field_tl_corner[1]+ minifield_height/2)), 2, 1)
+    pygame.draw.circle(The_game_window.surface, GREY_LINES, \
+                    (int(field_tl_corner[0] + minifield_width/2), \
+                    int(field_tl_corner[1]+ minifield_height/2)), 15, 1)
+
+
+    ratio_rectangle_player = calculate_trening_area_ratio(The_reff.coach_team_A.training_areas_player)
+    ratio_rectangle_ball = calculate_trening_area_ratio(The_reff.coach_team_A.training_areas_ball)
+
+    area_rectangle_player  = calculate_trening_area_coordinates(ratio_rectangle_player,minifield_rect_format,"vertical")
+    area_rectangle_ball  = calculate_trening_area_coordinates(ratio_rectangle_ball,minifield_rect_format,"vertical")
+
+    draw_training_area (The_game_window,area_rectangle_player,PINK)
+    draw_training_area (The_game_window,area_rectangle_ball,BLUE)
+
+
+def calculate_trening_area_ratio(sectors):  #vstup sektory hriste
+    # area_ratios = [min_x, min_y, max_x, max_y]
+    area_ratios = [0,0,0,0]
+    sectors_ratio = 1/3
+
+    '''
+     9x sektoru
+     numberes = vzdalenost od vlasni vybrany
+     letters = pozice k vlastni brane
+                  1         2            3
+           ____________________________________
+    A     |                                    |
+         _|           .           .            |_
+    B   | |                                    | |
+        |_|           .           .            |_|
+    C     |                                    |
+          |____________________________________|
+
+    '''
+    for sectors_loop in range (0,2):
+        # min
+        if  sectors[sectors_loop][0] == True :
+            area_ratios[0 + sectors_loop] = 0
+        else:
+            if  sectors[sectors_loop][1] == True :
+                area_ratios[0 + sectors_loop]= 1/3
+            else:
+                area_ratios[0 + sectors_loop] = 2/3
+        # max
+        if  sectors[sectors_loop][2] == True :
+            area_ratios[2 + sectors_loop ] = 1
+        else:
+            if  sectors[sectors_loop][1] == True :
+                area_ratios[2 + sectors_loop]= 2/3
+            else:
+                area_ratios[2 + sectors_loop] = 1/3
+
+    return area_ratios
+
+
+def calculate_trening_area_coordinates(coordinates_ratio,field_rect_format,field_orientation):
+    if  field_orientation ==  "vertical":
+        area_width = int( field_rect_format[2] * abs(coordinates_ratio[0] - coordinates_ratio[2]))
+        area_height = int( field_rect_format[3] * abs(coordinates_ratio[1] - coordinates_ratio[3]))
+
+        area_corner_x = int(  field_rect_format[0] +  field_rect_format[2] *  coordinates_ratio[0])
+        area_corner_y = int( field_rect_format[1] + field_rect_format[3] * (1- coordinates_ratio[3] ) ) # odpocet osa y je prevracena
+
+        if True:
+            print(" area_width               ", area_width)
+            print(" area_height              ", area_height  )
+            print(" bottom y--               ", field_rect_format[1] + field_rect_format[2])
+            print("area hgt ration starty    ", area_height ,"    " , coordinates_ratio[3])
+            print(" toparea yy--             ", (field_rect_format[1] + field_rect_format[2] ) - area_height *  coordinates_ratio[3])
+            print(" coordinates-             ", area_corner_x, area_corner_y,area_width, area_height)
+
+    return [ area_corner_x, area_corner_y,area_width, area_height]
+
+
+def draw_training_area (The_game_window,area_rectangle,area_color):
+
+
+    '''
+         mini field orientation
+           ___________________
+          |                   |
+    3     |                   |
+          |                   |
+          |                   |
+    2     |                   |
+          |                   |
+          |                   |
+    1     |                   |
+          |_______brana_______|
+             A      B      C
+    '''
+    # prekryvani 2zon
+    if area_color == PINK:
+        area_rectangle[0] = area_rectangle[0] + 2
+        area_rectangle[1] = area_rectangle[1] + 2
+
+    pygame.draw.rect(The_game_window.surface, area_color,area_rectangle, 1)
 
 
 def draw_green_tick(position,The_game_window):
@@ -242,32 +386,29 @@ def draw_green_tick(position,The_game_window):
     y_point = position[1]
     side = The_game_window.menu_line_spacing
 
-    pygame.draw.lines(The_game_window.surface, green, True, ((x_point + side/2, y_point ) ,  \
-                                                        ( x_point + side,y_point - side )), 4)
+    pygame.draw.lines(The_game_window.surface, GREEN, True, \
+                                    ((x_point + side/2, y_point), \
+                                     (x_point + side,y_point - side)), 4)
 
-    pygame.draw.lines(The_game_window.surface, green, True, (( int(x_point + side/3 ) , int(y_point - side/3) ) ,  \
-                                                          ( x_point + side/2, y_point  )), 4)
-
-
-
-
-
+    pygame.draw.lines(The_game_window.surface, GREEN, True, \
+                                    ((int(x_point + side/3 ), int(y_point - side/3)), \
+                                     (x_point + side/2, y_point)), 4)
 
 if False:
-    test1 = f_calculate_sector(1,"left",[  30   ,  200  ],[1216, 503],[15, 568])
-    test1 = f_calculate_sector(1,"left",[  16   ,  200  ],[1216, 503],[15, 568])
-    test1 = f_calculate_sector(1,"right",[  45  ,  200],[1216, 503],[15, 568])
-    test1 = f_calculate_sector(1,"right",[  25   ,  200  ],[1216, 503],[15, 568])
+    test1 = calculate_sector(1,"left",[30, 200],[1216, 503],[15, 568])
+    test1 = calculate_sector(1,"left",[16, 200],[1216, 503],[15, 568])
+    test1 = calculate_sector(1,"right",[45, 200],[1216, 503],[15, 568])
+    test1 = calculate_sector(1,"right",[25, 200],[1216, 503],[15, 568])
 
 if False:
     print("-----------------------------------")
-    print( f_calculate_sector(1,"left",[  29   ,  15  ],[90, 30],[0, 30]) )
+    print( calculate_sector(1,"left",[  29   ,  15  ],[90, 30],[0, 30]) )
     print("[29,15],[90, 30],[0,30]")
     print("-----------------------------------")
-    print( f_calculate_sector(1,"left",[  31   ,  15  ],[90, 30],[0, 30]) )
+    print( calculate_sector(1,"left",[  31   ,  15  ],[90, 30],[0, 30]) )
     print("[31,15],[90, 30],[0,30]")
     print("-----------------------------------")
-    print( f_calculate_sector(1,"left",[ 75,25  ],[90, 30],[0, 30]) )
+    print( calculate_sector(1,"left",[ 75,25  ],[90, 30],[0, 30]) )
     print("[75,25],[90, 30],[0,30]")
     print("-----------------------------------")
     print(" ")
@@ -280,6 +421,6 @@ if False:
     print("       [0]      [1]        [2]        ")
 
 
-    #test1 = f_calculate_sector(1,"left",[  10   ,  20  ],[90, 30],[0, 30])
-    #test1 = f_calculate_sector(1,"right",[  60  ,  20],[90, 30],[0, 30])
-    #test1 = f_calculate_sector(1,"right",[  20   ,  20  ],[90, 30],[0, 30])
+    #test1 = calculate_sector(1,"left",[  10   ,  20  ],[90, 30],[0, 30])
+    #test1 = calculate_sector(1,"right",[  60  ,  20],[90, 30],[0, 30])
+    #test1 = calculate_sector(1,"right",[  20   ,  20  ],[90, 30],[0, 30])

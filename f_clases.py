@@ -93,11 +93,12 @@ class game_field():
 
     # nastaveni dle hodnot aplikace
     def set_field (self,game_window):
+        field_gap_to_window = 20
         #self.field_bl_window[0] = int ( 1/6 * game_window.window_width  )
         #self.field_bl_window[1] = int ( 4/5 * game_window.window_height  )
 
         #self.field_bl_corner[0] = int ( 1/6 * game_window.window_width + self.gap )
-        self.field_bl_corner[0] = int ( 15)
+        self.field_bl_corner[0] = int (field_gap_to_window)
         self.field_bl_corner[1] = int ( 4/5 * game_window.window_height - self.gap/2 )
 
         self.field_width = int ( 0.95 * game_window.window_width )
@@ -117,7 +118,7 @@ class class_coach ():
         self.team_play_at = team              # urcuje zda je tym domaci nebo ne ,pro nedomaci team se nezobrazuji detaily
         self.loaded_teams_xml = []
         for loop in range (0,10):
-            self.loaded_teams_xml.append(saving_type.empty_team_slot.value)
+            self.loaded_teams_xml.append(SavingType.empty_team_slot.value)
         self.load_data_from_xml()
 
     # buffers pro vyber teamu v 'team management'
@@ -128,7 +129,8 @@ class class_coach ():
     active_trening = False              # ukazatel treningu nebo zapasu
     trening_sesion_total_runs = 100    # 5000  celkovy pocet uceni pro spusteny trening
     automated_trening_type = False      # true jestli je spusten zautomatizovy trening
-    training_areas = [2,2]      # obsahuje index sektoru kde bude trenovano mic, hrac   default stred hrsite
+    training_areas_ball = [[True,False,False],[True,False,False]]     # hriste rozdeleno na 9 sektoru
+    training_areas_player = [[True,False,False],[True,False,False]]
     trainig_code = [True,True, True, True, True, True, True, True, False, True, True , True , True ]
     team_players = [0,0,0,0,0]
 
@@ -203,8 +205,8 @@ class class_coach ():
         print ("player_ID",player_ID)
         for team_loop in range (0,10):
             for loop_pl in range (1,6):
-                if self.loaded_teams_xml[team_loop] != saving_type.empty_team_slot.value and \
-                   self.loaded_teams_xml[team_loop][loop_pl] != saving_type.empty_player_slot.value:
+                if self.loaded_teams_xml[team_loop] != SavingType.empty_team_slot.value and \
+                   self.loaded_teams_xml[team_loop][loop_pl] != SavingType.empty_player_slot.value:
                     if self.loaded_teams_xml[team_loop][loop_pl][1] == player_ID:
                         # index 4 = trening_time
                         self.loaded_teams_xml[team_loop][loop_pl][4] = str( int( self.loaded_teams_xml[team_loop][loop_pl][4]) + 1)
@@ -215,21 +217,21 @@ class class_coach ():
         vertical_min    = The_field.field_bl_corner [1] - The_field.field_height
         horizontal_min  = The_field.field_bl_corner [0]
         horizontal_max  = The_field.field_bl_corner [0] + The_field.field_width
-        ball_field_index = self.training_areas[0]
-        player_field_index = self.training_areas[1]
-        sector_ratio = 3
+        ball_index = 0
 
-        list_of_ingamers[0].set_position    (randint(horizontal_min + int(The_field.field_width/sector_ratio) * ball_field_index, \
-                                                     horizontal_min + int(The_field.field_width/sector_ratio )* (1+ball_field_index) ), \
-                                             randint( vertical_min, vertical_max ) )
+        #ball_field_area = calculate_trening_area(self.training_areas_ball,The_field) # vraci souradnice [min_x,max_x,min_y,max_y]
+        #player_field_area = calculate_trening_area(self.training_areas_player,The_field)
+
+        list_of_ingamers[ball_index].set_position (randint( ball_field_area[0]  , ball_field_area[1] ), \
+                                                   randint( ball_field_area[2]  , ball_field_area[3]  ) )
+
         for no_of_ingamers in range (1,len(list_of_ingamers)): #mic a hraci jsou posunuti na novou pozici
             if list_of_ingamers[no_of_ingamers].selected_b ==False:
                 list_of_ingamers[no_of_ingamers].set_position (randint(horizontal_min, horizontal_max), \
                                                                randint(vertical_min, vertical_max))
             else:
-                list_of_ingamers[no_of_ingamers].set_position (randint(horizontal_min + int(The_field.field_width/sector_ratio) * player_field_index, \
-                                                                       horizontal_min + int(The_field.field_width/sector_ratio) * (1+player_field_index)), \
-                                                               randint(vertical_min, vertical_max))
+                list_of_ingamers[no_of_ingamers].set_position (randint( player_field_area[0]  , player_field_area[1] ), \
+                                                               randint( player_field_area[2]  , player_field_area[3]  ) )
 
 
     def set_managementcreateNo(self,index):
@@ -290,12 +292,12 @@ class class_coach ():
         # slot hracu, zaporne hodnoty error stavy
         if  to_slot[1] >0 :
 
-            if self.loaded_teams_xml [to_slot[0]] == saving_type.empty_team_slot.value:
+            if self.loaded_teams_xml [to_slot[0]] == SavingType.empty_team_slot.value:
                 # pro prazny slot teamu se vytvori sablona , A = asci 65
                 self.loaded_teams_xml [to_slot[0]] = [[chr(65 + to_slot[0] ),"updated","notselected"]]                    #dodelat random nazev  teamu
 
                 for loop_pl in range (1,6):
-                    self.loaded_teams_xml[to_slot[0]].append(saving_type.empty_player_slot.value)
+                    self.loaded_teams_xml[to_slot[0]].append(SavingType.empty_player_slot.value)
 
             # nastavi team na status updated => hrac neni ulozeny do xml file
             self.loaded_teams_xml [to_slot[0]][0][1] = "updated"
@@ -327,8 +329,8 @@ class class_coach ():
         # kontrola  slot neni prazdny a je pro hrace
         if player_index > 0:
             # team slot neni prazdny len("none") = 4
-            if self.loaded_teams_xml[team_index] != saving_type.empty_team_slot.value : # slot ma ulozeny team
-                self.loaded_teams_xml [team_index][player_index] = saving_type.empty_player_slot.value                                                           #pridej team neni original
+            if self.loaded_teams_xml[team_index] != SavingType.empty_team_slot.value : # slot ma ulozeny team
+                self.loaded_teams_xml [team_index][player_index] = SavingType.empty_player_slot.value                                                           #pridej team neni original
                 # nastavi team na status updated => hodnoty nactene ve hre se lisi od hodnot ulozenych v xml souboru
                 self.loaded_teams_xml [team_index][0][1] = "updated"
                 self.loaded_teams_xml [team_index][0][2] = "unselected"
@@ -347,16 +349,16 @@ class class_coach ():
 
         # slot hracu, zaporne hodnoty error stavy  , nelze kopirovat prazdny slot
         if to_slot[1] >0 and from_slot[1] >0 and \
-            self.loaded_teams_xml [from_slot[0]] != saving_type.empty_team_slot.value and \
-            self.loaded_teams_xml [from_slot[0]][from_slot[1]] != saving_type.empty_player_slot.value :
+            self.loaded_teams_xml [from_slot[0]] != SavingType.empty_team_slot.value and \
+            self.loaded_teams_xml [from_slot[0]][from_slot[1]] != SavingType.empty_player_slot.value :
 
-            if self.loaded_teams_xml [to_slot[0]] == saving_type.empty_team_slot.value:  # 4 = len(none)
+            if self.loaded_teams_xml [to_slot[0]] == SavingType.empty_team_slot.value:  # 4 = len(none)
                 # pro prazny slot teamu se vytvori sablona
                 # A = asci 65
                 self.loaded_teams_xml [to_slot[0]] = [[chr(65 + to_slot[0] ),"updated","notselected"]]                    #dodelat random nazev  teamu
 
                 for loop_pl in range (1,6):
-                    self.loaded_teams_xml[to_slot[0]].append(saving_type.empty_player_slot.value)
+                    self.loaded_teams_xml[to_slot[0]].append(SavingType.empty_player_slot.value)
 
 
             # nastavi team na status updated => hodnoty nactene ve hre se lisi od hodnot ulozenych v xml souboru
@@ -379,8 +381,8 @@ class class_coach ():
         player_selected = False
         team_index = self.selected_slot_team_management[0]
         player_index = self.selected_slot_team_management[1]
-        if  player_index > 0 and self.loaded_teams_xml[team_index] != saving_type.empty_team_slot.value : # slot ma ulozeny team, je vybran hrac
-            if self.loaded_teams_xml [team_index][player_index] != saving_type.empty_player_slot.value : # slot hrace neni prazdny
+        if  player_index > 0 and self.loaded_teams_xml[team_index] != SavingType.empty_team_slot.value : # slot ma ulozeny team, je vybran hrac
+            if self.loaded_teams_xml [team_index][player_index] != SavingType.empty_player_slot.value : # slot hrace neni prazdny
                 player_selected = True
         return player_selected
 
@@ -403,9 +405,9 @@ class class_coach ():
         player_index = self.selected_slot_team_management[1]
         checked_team = self.loaded_teams_xml[team_index]
 
-        if checked_team != saving_type.empty_team_slot.value: #pokud prazdny slot metoda nic nevykona
+        if checked_team != SavingType.empty_team_slot.value: #pokud prazdny slot metoda nic nevykona
             for check_team_loop in range (1,5):
-                if len(checked_team [check_team_loop] ) == saving_type.empty_player_slot.value:                                       # 4 = len(none)   opakovani kodu zlepsit
+                if len(checked_team [check_team_loop] ) == SavingType.empty_player_slot.value:                                       # 4 = len(none)   opakovani kodu zlepsit
                     all_players_check = 0
 
             if all_players_check == 1 and player_index == 0: #oznacen je team ne hrac
@@ -448,7 +450,7 @@ class class_coach ():
         team = self.selected_slot_team_management[0]
 
         # dvakrat vybrany team
-        if self.loaded_teams_xml[team] != saving_type.empty_team_slot.value:
+        if self.loaded_teams_xml[team] != SavingType.empty_team_slot.value:
             #team neni vybran
             if self.loaded_teams_xml[team][0][2] == "notselected" and self.loaded_teams_xml[team][0][1] == "original":
                 self.loaded_teams_xml[team][0][2] = "selected"
@@ -456,15 +458,32 @@ class class_coach ():
                 self.loaded_teams_xml[team][0][2] = "notselected"
 
 
-    def set_training_areas(self,saving_index,area_index):
-        print ("saving_index,area_index",saving_index,area_index)
-        self.training_areas[saving_index] = area_index
-        print (" self.training_areas"  ,  self.training_areas)
+    def set_training_areas_player(self,change_input_index):  # change_input_index cislo 0 do 5
+        buffer = copy.deepcopy(self.training_areas_player)
+        index = int(change_input_index)
+        if change_input_index <3:
+            self.training_areas_player[0][index] = not self.training_areas_player[0][index]
+        else:
+            self.training_areas_player[1][index - 3] = not self.training_areas_player[1][index - 3]
+
+        # area je vzdy jeden celek ,nelze oznacit dve oddelene casti
+        if  self.training_areas_player[0] == [True,False,True]  or \
+              self.training_areas_player[1] == [True,False,True]:
+            self.training_areas_player = buffer
 
 
+    def set_training_areas_ball(self,change_input_index):  # change_input_index cislo 0 do 5
+        buffer = copy.deepcopy(self.training_areas_ball)
+        index = int(change_input_index)
+        if change_input_index <3:
+            self.training_areas_ball[0][index] = not self.training_areas_ball[0][index]
+        else:
+            self.training_areas_ball[1][index - 3] = not self.training_areas_ball[1][index - 3]
 
-
-
+        # area je vzdy jeden celek ,nelze oznacit dve oddelene casti
+        if  self.training_areas_ball[0] == [True,False,True]  or \
+              self.training_areas_ball[1] == [True,False,True]:
+            self.training_areas_ball = buffer
 #--------------------------------------------------------------------------------------------class reff
 # trida rozhodciho
 class reff ():
@@ -495,7 +514,7 @@ class reff ():
         save_index = 0
         all_teams = self.coach_team_A.loaded_teams_xml + self.coach_team_B.loaded_teams_xml
         for team_no in range (0,len(all_teams)):
-            if all_teams[team_no] != saving_type.empty_team_slot.value:
+            if all_teams[team_no] != SavingType.empty_team_slot.value:
                 if all_teams[team_no][0][2] == "selected":
                     if save_index == 0:
                         self.teams_for_game[0] = all_teams[team_no]
@@ -525,7 +544,7 @@ class reff ():
     def reset_teams_buffer_for_game(self):
         self.teams_for_game  = [" "," ","AI","H"]
         for teams_reset_loop  in range (0,12):
-            if len(self.loaded_teams_xml [teams_reset_loop] ) != saving_type.empty_player_slot.value:  # 4 = len(none)
+            if len(self.loaded_teams_xml [teams_reset_loop] ) != SavingType.empty_player_slot.value:  # 4 = len(none)
                 if self.loaded_teams_xml[teams_reset_loop][0][2] == "selected" :
                     self.loaded_teams_xml[teams_reset_loop][0][2] = "notselected"
 
@@ -546,8 +565,8 @@ class reff ():
         start_training_check = False
         print("gfgfgfgfgf",index_team_a,index_team_b )
         # oba teamy existuji
-        if self.coach_team_A.loaded_teams_xml [index_team_a[0]] != saving_type.empty_player_slot.value  and  \
-            self.coach_team_A.loaded_teams_xml [index_team_b[0]]  != saving_type.empty_player_slot.value:  # 4 = len("none")
+        if self.coach_team_A.loaded_teams_xml [index_team_a[0]] != SavingType.empty_player_slot.value  and  \
+            self.coach_team_A.loaded_teams_xml [index_team_b[0]]  != SavingType.empty_player_slot.value:  # 4 = len("none")
 
             # oznacen hrac a team
             if  (index_team_a[1] == 0 or index_team_b[1] == 0)  and \
@@ -581,7 +600,7 @@ class reff ():
         # kontrola ze 2 teamy jsou oznaceny
         for check_loop in range (0,len(master_list)):
             # team slot neni prazdny len("none") = 4
-            if master_list[check_loop] != saving_type.empty_team_slot.value :
+            if master_list[check_loop] != SavingType.empty_team_slot.value :
                 if master_list[check_loop][0][2] == "selected":
                     teams_selected = teams_selected + 1
         return  teams_selected
@@ -596,7 +615,7 @@ class reff ():
             self.teams_for_game[1] = " "
             saving_index = 0
             for save_loop in range (0,len(self.loaded_teams_xml)):
-                if self.loaded_teams_xml[save_loop] != saving_type.empty_team_slot.value:
+                if self.loaded_teams_xml[save_loop] != SavingType.empty_team_slot.value:
                     if self.loaded_teams_xml[save_loop][0][2] == "selected":
                         self.teams_for_game[saving_index] = self.loaded_teams_xml[save_loop][0][0]
                         saving_index = saving_index + 1
@@ -645,15 +664,15 @@ class reff ():
     # resetovani mice
     def game_reset (self,game_field,The_ball):
         The_ball.speed = 0
-        The_ball.color = white
+        The_ball.color = WHITE
         The_ball.set_position    (randint( 400,800 ), randint(100 ,500 ) )
 
 
     def draw_ingamer (self,game_window):                                                                      #zmen na draw ref??
         if self.selected_b == True:
-            color = yellow_item_selected
+            color = YELLOW_SELECTED_ITEMS
         else :
-            color = white
+            color = WHITE
 
         # Rozhodci se vykresluje jako bilo-cerny kruh
         # pomocny vypocet
@@ -677,7 +696,7 @@ class reff ():
         x_limits = [  self.position[0] - self.radius   ,  self.position[0] + self.radius    ]
         y_limits = [  self.position[1] - self.radius   ,  self.position[1] + self.radius    ]
 
-        if f_is_clikced_on_circle(x_limits,y_limits,position_clicked) == True:
+        if is_clikced_on_circle(x_limits,y_limits,position_clicked) == True:
             return True
         else:
             return False
@@ -755,7 +774,7 @@ class reff ():
                     else:
                         new_player.team_type = self.teams_for_game[3]
                         new_player.team = all_teams[teams_lops][0][0]
-                        new_player.color = red
+                        new_player.color = RED
                         new_player.field_site = "right"
                         new_player.set_coach(self.coach_team_B)
                         new_player.set_graphic("player_b.png")

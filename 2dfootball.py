@@ -31,7 +31,7 @@ key_down = 0                            # ukazatel pro event z klavesnice
 was_clicked = 0                         # ukazatel pro event od mysi
 position_clicked = [0,0]                # detail pro event od mysi
 game_inicialisation = False             # test pred spustenim hry
-#game_menu_active = True                 # zobrazeni hlavniho menu
+#game_menu_active = True                # zobrazeni hlavniho menu
 game_menu_selcection = 'A'              # zkontroluj
 screen_ID_lower_screen = [0,0]          # welcome screen  list  screen_ID a lower_Screen
 screen_ID = 0
@@ -54,19 +54,28 @@ if path.exists("setings_data"):
 else:
     game_inicialisation = False
 
-# vygeneruje tlacitka menu                                                                 UDELAT PRI INCIALIZACI                                                                               # udelej metodu add_buttons
+# vygeneruje tlacitka menu                                                                              #? mozna udelej metodu add_buttons
 The_game_window.buttons = create_buttons_instances(The_game_window,The_field)
 
 
 #testy
-for btnloop in range (0,len(The_game_window.buttons)):
-    print(vars(The_game_window.buttons[btnloop]))
+print("----testy-------------------------------")
+print ("The_game_window.window_height",The_game_window.window_height  )
+print ("The_game_window.width",The_game_window.window_width  )
+if False:
+    for btnloop in range (0,len(The_game_window.buttons)):
+        print(vars(The_game_window.buttons[btnloop]))
+
+    print ("The_game_window.menu_line_spacing ", The_game_window.menu_line_spacing)
+    print ("The_game_window.window_height",The_game_window.window_height  )
+if True:
+    print("-fitrening  ",The_reff.coach_team_A.training_areas_player )
+    print("-field_bl_corner ",The_field.field_bl_corner )
+    print("--testy---------------------------------")
 
 
-print (The_game_window.menu_line_spacing)
-print (The_game_window.window_height)
 
-# MAIN GAME LOOP
+# --------------MAIN GAME LOOP-------------
 while True:
 
     for event in pygame.event.get():                                                                              # opravit ball a reff indexy sou hardcoded v loop ne uplne supr reseni
@@ -114,12 +123,12 @@ while True:
                         3: kop do mice
                         4: bez akce
                         '''
-                        if screen_ID == screens.intrening.value and The_game_window.menu_on_screen == False and The_reff.list_of_ingamers[no_of_ingamers].team_type == "H":
+                        if screen_ID == Screens.intrening.value and The_game_window.menu_on_screen == False and The_reff.list_of_ingamers[no_of_ingamers].team_type == "H":
                             The_reff.list_of_ingamers[no_of_ingamers].send_data_to_coach(3,The_reff.list_of_ingamers,The_field)
 
 
             # klavesa uzita jen pro trening n =>'no action'
-            if key[K_n] and screen_ID == screens.intrening.value and The_game_window.menu_on_screen == False:
+            if key[K_n] and screen_ID == Screens.intrening.value and The_game_window.menu_on_screen == False:
                 # selected_player = list_of_ingamers[4]                                                            #testy vykresli detail hrace mozna pouzit
                 for no_of_ingamers in range (2,len(The_reff.list_of_ingamers)):
                     if The_reff.list_of_ingamers[no_of_ingamers].selected_b == True and The_reff.list_of_ingamers[no_of_ingamers].team_type == "H":
@@ -131,7 +140,7 @@ while True:
 
             # ukonceni treningu
             if key[K_p]:
-                if screen_ID == screens.intrening.value:
+                if screen_ID == Screens.intrening.value:
                     if The_reff.coach_team_A.active_trening == True :
                         The_reff.coach_team_A.active_trening = False
                     else:
@@ -139,7 +148,7 @@ while True:
 
                     # spust vyhodnoceni dat?
                     # smazat ingamer krom mice a reff
-                    screen_ID = screens.trening.value
+                    screen_ID = Screens.trening.value
 
         if event.type == KEYUP:                                                                                  # !!!!!!!!!!kontrola events udelat lip loop se opakuje
             key_down = False
@@ -150,7 +159,7 @@ while True:
             was_clicked = 1
             position_clicked = pygame.mouse.get_pos()
             selected_player = "emptynow"
-            if screen_ID == screens.ingame.value: #funkcnost aktivni jen pri hre
+            if screen_ID == Screens.ingame.value: #funkcnost aktivni jen pri hre
                 for no_of_ingamers in range (0,len(The_reff.list_of_ingamers)):
                     #pridej kontrolu pro trening,nelze select odthers      # pride kontrolu pri hre human/pc musi u teamu human by vzdy jeden hrac oznaceny
                     if The_reff.list_of_ingamers[no_of_ingamers].is_selected_by_click (position_clicked) == True and \
@@ -163,7 +172,7 @@ while True:
 
 
             # nove rozestaveni pro trening
-            if screen_ID == screens.intrening.value and event.button == 3 :
+            if screen_ID == Screens.intrening.value and event.button == 3 :
                 The_reff.coach_team_A.move_players_for_new_training_run (The_field,The_reff.list_of_ingamers)
 
 
@@ -182,7 +191,7 @@ while True:
                         angle_done = 1 # -10 stupnu pootoceni
                     The_reff.list_of_ingamers[no_of_ingamers].set_path_target(new_angle)
 
-                    if screen_ID == screens.intrening.value and The_game_window.menu_on_screen == False and \
+                    if screen_ID == Screens.intrening.value and The_game_window.menu_on_screen == False and \
                         The_reff.list_of_ingamers[no_of_ingamers].reinforsment ==False and The_reff.list_of_ingamers[no_of_ingamers].team_type == "H":
                         The_reff.list_of_ingamers[no_of_ingamers].send_data_to_coach( angle_done,The_reff.list_of_ingamers,The_field  )
 
@@ -199,7 +208,7 @@ while True:
             if The_reff.list_of_ingamers[no_of_ingamers].selected_b == True :
                 The_reff.list_of_ingamers[no_of_ingamers].move(The_game_window,The_field,The_reff.list_of_ingamers)
 
-                if screen_ID == screens.intrening.value and The_game_window.menu_on_screen == False  and The_reff.list_of_ingamers[no_of_ingamers].selected_b == "H":
+                if screen_ID == Screens.intrening.value and The_game_window.menu_on_screen == False  and The_reff.list_of_ingamers[no_of_ingamers].selected_b == "H":
                     # data tracking , action krok
                     The_reff.list_of_ingamers[no_of_ingamers].send_data_to_coach(2,The_reff.list_of_ingamers,The_field)
 
@@ -215,14 +224,14 @@ while True:
                 lower_screen_ID = screen_ID_lower_screen[1]
 
                 # pri odchodu z hry nebo treningu maji hraci pause                                              # elegantneji udelat metodu pause pro reff
-                if (screen_ID_buffer == screens.ingame.value or screen_ID_buffer == screens.intrening.value) and trunc(button_ID) != screens.ingame.value:
-                    if screen_ID != screens.ingame.value or screen_ID != screens.intrening.value:
+                if (screen_ID_buffer == Screens.ingame.value or screen_ID_buffer == Screens.intrening.value) and trunc(button_ID) != Screens.ingame.value:
+                    if screen_ID != Screens.ingame.value or screen_ID != Screens.intrening.value:
                         for no_of_ingamers in range (1 , len(The_reff.list_of_ingamers)):
                             The_reff.list_of_ingamers[no_of_ingamers].game_status = "pause"
 
 
         # vyber radku
-        if  screen_ID == screens.trening.value or screen_ID == screens.teammanagement.value or screen_ID == screens.teammanagementaway.value:
+        if  screen_ID == Screens.trening.value or screen_ID == Screens.teammanagement.value or screen_ID == Screens.teammanagementaway.value:
             The_reff.coach_team_A.calculate_slot_index(position_clicked,The_game_window)
             The_reff.coach_team_B.calculate_slot_index(position_clicked,The_game_window)
 
@@ -240,53 +249,64 @@ while True:
     # posune mic v pripade ze ma nejakou energii (speed)                                                     #  --?? patri do screen hry/treningu ne jen tak !!!!
     The_ball.moving(The_game_window,The_field,list_of_ingamers)
     '''
-    The_game_window.surface.fill(black)
+    The_game_window.surface.fill(BLACK)
+
+    if False :
+        ssectors = calculate_trening_area(The_reff.coach_team_A.training_areas_player,The_field)
+        # ttttetettsty
+        #print("--testy---------------------------------")
+        #print("--testy---------------------------------", ssectors )
+
+        pygame.draw.lines(The_game_window.surface, RED, True, \
+                                                ((ssectors[0], ssectors[2]), \
+                                                 (ssectors[1], ssectors[3])), 2)
 
     # vykresli pozadovanou obrazovku
-    if screen_ID == screens.welcome.value:                                                                                       # dat do menu knihovny?  opravid indexy a jmena podle wordu
+    if screen_ID == Screens.welcome.value:                                                                                       # dat do menu knihovny?  opravid indexy a jmena podle wordu
         draw_weclome(The_game_window)
 
-    if screen_ID == screens.teammanagement.value: # team nanagement
+    if screen_ID == Screens.teammanagement.value: # team nanagement
         draw_team_managemet(The_game_window,The_field,The_reff,screen_ID)                     # staci ferr nebo all ingamers?zkontroluj
         f_print_teammngmt_buttons(The_game_window)
 
-        if lower_screen_ID == screens.teammanagementedit.value:
+        if lower_screen_ID == Screens.teammanagementedit.value:
             f_print_edit_player_buttons(The_game_window)
-        elif lower_screen_ID == screens.teammanagementcreate.value:
+        elif lower_screen_ID == Screens.teammanagementcreate.value:
             f_print_create_player_buttons(The_game_window,The_reff.coach_team_A)
             f_print_createPlr_details(The_game_window,The_reff.coach_team_A.trainig_code,False )
 
-        if lower_screen_ID != screens.teammanagementcreate.value:
+        if lower_screen_ID != Screens.teammanagementcreate.value:
             f_print_player_details_off_game(screen_ID,The_reff,The_game_window)
 
     # away team
-    if screen_ID == screens.teammanagementaway.value:
+    if screen_ID == Screens.teammanagementaway.value:
         draw_team_managemet(The_game_window,The_field,The_reff,screen_ID)                     # staci ferr nebo all ingamers?zkontroluj
         f_print_teammngmtaway_buttons(The_game_window)
         f_print_player_details_off_game(screen_ID,The_reff,The_game_window)
 
-    if screen_ID == screens.teamsconfirmation.value: # vyber tymu do hry
+    if screen_ID == Screens.teamsconfirmation.value: # vyber tymu do hry
         draw_teams_for_game(The_game_window,The_field,The_reff)
         f_print_teams_for_game_buttons (The_game_window)
 
 
-    if screen_ID == screens.trening.value : # vyber teamu a hrace pro trening
+    if screen_ID == Screens.trening.value : # vyber teamu a hrace pro trening
         #print ("   treningselect screen ")
         draw_team_managemet(The_game_window,The_field,The_reff,screen_ID)
         f_print_trening_buttons(The_game_window)
         f_print_player_details_off_game(screen_ID,The_reff,The_game_window)
+        draw_trening_mini_filed(The_game_window, The_reff , The_field)
 
-        if lower_screen_ID == screens.treningmanual.value:
+        if lower_screen_ID == Screens.treningmanual.value:
             f_print_treningman_buttons(The_game_window)
 
-    if screen_ID == screens.trainingoffscreen.value:
+    if screen_ID == Screens.trainingoffscreen.value:
         f_print_trening_progress(The_game_window,The_field,The_reff.coach_team_A,The_reff.coach_team_B)
         draw_trening_off_screen(The_game_window)
 
-    if screen_ID == screens.stats.value:#stats
+    if screen_ID == Screens.stats.value:#stats
         draw_stats(The_game_window,The_reff)
                                                                                                              # 2 krat podminka pro stejny screen????
-    if screen_ID == screens.ingame.value or screen_ID == screens.intrening.value : # hriste (hra / trening)
+    if screen_ID == Screens.ingame.value or screen_ID == Screens.intrening.value : # hriste (hra / trening)
         if The_game_window.menu_on_screen == True:
             draw_paused_game(The_game_window)
 
@@ -298,7 +318,7 @@ while True:
         if selected_player != "emptynow" :                                                                   # potrebuju promenou selected player??zkontroluj
             selected_player.draw_data_lower_menu (The_game_window,The_field,The_reff.list_of_ingamers)
                                                                                                             # delam 2 x redraw ??? v loop a taky v metode
-        if screen_ID == screens.intrening.value :
+        if screen_ID == Screens.intrening.value :
             f_print_trening_progress(The_game_window,The_field,The_reff.coach_team_A,The_reff.coach_team_B)
             draw_field_sectors(The_game_window,The_field)
             draw_field_subsectors(The_game_window,The_field)
@@ -316,21 +336,21 @@ while True:
 
 
 
-    if screen_ID == screens.help.value : # napoveda
+    if screen_ID == Screens.help.value : # napoveda
         f_print_help(The_game_window)
 
-    if screen_ID == screens.error.value :
+    if screen_ID == Screens.error.value :
         draw_error(The_game_window)
 
 
     # vykresli game menu & rozdeleni obrazovky, pri zapase je neaktivni
     if The_game_window.menu_on_screen == True :
-        The_game_window.surface.fill(black,(0,0,The_game_window.game_menu_x_end,The_game_window.game_menu_y_end))
+        The_game_window.surface.fill(BLACK,(0,0,The_game_window.game_menu_x_end,The_game_window.game_menu_y_end))
         draw_main_menu(The_game_window)
-        draw_menu_lines_ID_3(The_game_window)
+        draw_menu_lines_ID_3(The_game_window,screen_ID)
         print_check_pin(The_game_window)
     else:
-        if screen_ID != screens.help.value:
+        if screen_ID != Screens.help.value:
             draw_menu_lines_ID_4(The_game_window)    # napoveda je jen jedno okno
         #draw_menu_icon(The_game_window)
         f_print_dysplay_menu_button(The_game_window)

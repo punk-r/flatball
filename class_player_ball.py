@@ -12,19 +12,15 @@ import support_functions
 from support_functions import *
 import screens
 from screens import *
-from random import randint
 
-# TensorFlow and tf.keras
+from random import randint
 import tensorflow as tf
 from tensorflow import keras
-
-# Helper libraries
 import numpy as np
 #import matplotlib.pyplot as plt
 
 
-#--------------------------------------------------------------------------------------------class player
-
+#-------------------------------------------------------------------------------class player
 class player (ingamer):
     game_status = "notSpecified"             # hra, pausa, ....
     angle = "notSpecified"                   #???ZKONTROLUJ UZ JE V INGAMER TRIDE                                                                                           #neni potreba je uzito path target
@@ -57,9 +53,7 @@ class player (ingamer):
 
     # pri pohybu(i jine akci) hrace trener zaznamena data,vyuzito pro trenovani
     def send_data_to_coach(self,action,list_of_ingamers,The_field):
-
         self.team_coach.process_data(self,action, self.get_NN_data(The_field,list_of_ingamers) )
-
 
     def get_NN_data(self,The_field,list_of_ingamers):
         The_ball = list_of_ingamers[0]
@@ -107,7 +101,7 @@ class player (ingamer):
                    round(pythagoras_distance (self.rect.center, The_ball.rect.center) - self.radius - The_ball.radius),
                    int(self.player_type), \
                    # testy pak vypocitat polohu
-                   float(f_calculate_sector(1,self.field_site,self.rect.center,[The_field.field_width,The_field.field_height],The_field.field_bl_corner)), \
+                   float(calculate_sector(1,self.field_site,self.rect.center,[The_field.field_width,The_field.field_height],The_field.field_bl_corner)), \
                    1, \
                    int(self.tactic), \
                    int(self.strategy), \
@@ -118,9 +112,7 @@ class player (ingamer):
                    0 , \
                    0 , \
                    0  ]
-
         return inputs
-
 
     # pro hrace ovladaneho PC team ma jedno vlakno
     def move_round_once(self,The_game_window,The_field,list_of_ingamers):
@@ -166,8 +158,6 @@ class player (ingamer):
                 self.move(The_game_window,The_field,list_of_ingamers)
             elif action == 3 and list_of_ingamers[0].owner == self:
                 list_of_ingamers[1].speed = 200   #testovaci kop
-
-
 
     # pro hrace ovladaneho PC kazdy hrac sve vlakkno
     def move_round(self,The_game_window,The_field,list_of_ingamers):
@@ -250,8 +240,8 @@ class player (ingamer):
 
         #-------------DODELAT bounderies / colisions ----------------------                                     #jede zkontroluj
         test_target_on_field = 0
-        test_target_too_close = 1
-        path_for_ball_check = 1
+        test_player_free_path = 1
+        test_ball_free_path = 1
         ball_is_frozen = 0
 
         #  detekce pohybu na hristi, cast hrace muze prejit pres linii hriste , pro pripad ze se balon zastavil prave na teto linii
@@ -300,9 +290,9 @@ class player (ingamer):
                         ball_new_target = self.calculate_angle_to_other_object(list_of_ingamers[no_of_ingamers].rect.center)
                         list_of_ingamers[no_of_ingamers].set_path_target (ball_new_target)
 
-                        path_for_ball_check  = list_of_ingamers[no_of_ingamers].is_ball_path_clear(The_game_window,The_field,list_of_ingamers)
+                        test_ball_free_path  = list_of_ingamers[no_of_ingamers].is_ball_path_clear(The_game_window,The_field,list_of_ingamers)
 
-                        if path_for_ball_check == 1:
+                        if test_ball_free_path == 1:
                             list_of_ingamers[no_of_ingamers].speed = 2
                         else:
                             list_of_ingamers[no_of_ingamers].speed = 0
@@ -315,13 +305,12 @@ class player (ingamer):
                 # kontrola kolize s ostatnimi hraci
                 # vynecha 'sebe' v kontrolre kolize , vynecha mic index '0' v list_of_ingamers
                 if ingamer_hypotensue < 2 * self.radius and other_ingamer_position != self.rect.center and no_of_ingamers > 0 :
-                    test_target_too_close = 0
+                    test_player_free_path = 0
 
         # pokud jsou vsechny podminky splneny hrac se muze pohnout
-        if test_target_on_field == 1 and test_target_too_close ==1 and path_for_ball_check == 1:
+        if test_target_on_field == 1 and test_player_free_path ==1 and test_ball_free_path == 1:
             self.rect.center =  [ self.rect.center[0] + self.velocity[0]  ,self.rect.center[1]  + self.velocity[1]  ]
     '''
-
     # prdelana metoda pomoci sprites
     def move(self,The_game_window,The_field,list_of_ingamers):                                                          # FUNKCE move POTREBUJE ZPREHLEDNIT
         ball_index = 0
@@ -333,9 +322,13 @@ class player (ingamer):
         left   = The_field.field_bl_corner[0]
 
         test_target_on_field = 0
-        path_for_ball_check = 1
+        test_player_free_path = 1
+        test_ball_free_path = 1
+        ball_is_frozen = False
+
         # kontrola zda mic neni v radius hrace
-        ball_is_frozen = pygame.sprite.collide_circle(self, list_of_ingamers[0])
+        if pythagoras_distance (list_of_ingamers[ball_index].rect.center,  self.rect.center) < list_of_ingamers[ball_index].radius + self.radius:
+            ball_is_frozen = True
 
         #  detekce pohybu na hristi, cast hrace muze prejit pres linii hriste , pro pripad ze se balon zastavil prave na teto linii
         if self.rect.center[0] + self.velocity[0] > left - self.radius/2  and self.rect.center[0] + self.velocity[0] < right + self.radius/2  and \
@@ -343,14 +336,12 @@ class player (ingamer):
 
             test_target_on_field = 1
 
-        # pohyb se provede pote se kontroluje zda je povolen ,pokud ne nastavi se hodnoty zpet
-        self.rect.center =  [ self.rect.center[0] + self.velocity[0]  ,self.rect.center[1]  + self.velocity[1]  ]
-
         # kontrola kolize s micem
         if ball_is_frozen == False :
 
             # pohyb posune mic, hrac udelal pohyb na lokaci mice => mic se posune                           # chyba nekdy mic zamrzne u hrace mozna zaokrouhlovani pri vypoctu souradnic
-            if  pygame.sprite.collide_circle(self, list_of_ingamers[ball_index]) :
+            if pythagoras_distance (list_of_ingamers[ball_index].rect.center,  self.rect.center) <= (list_of_ingamers[ball_index].radius + self.radius) + 3:
+            # if  pygame.sprite.collide_circle(self, list_of_ingamers[ball_index]) :
 
                 list_of_ingamers[0].set_owner(self)
 
@@ -358,32 +349,37 @@ class player (ingamer):
                 ball_new_target = self.calculate_angle_to_other_object(list_of_ingamers[ball_index].rect.center)
                 list_of_ingamers[ball_index].set_path_target (ball_new_target)
 
-                path_for_ball_check  = list_of_ingamers[ball_index].is_ball_path_clear(The_game_window,The_field,list_of_ingamers)
+                test_ball_free_path  = list_of_ingamers[ball_index].is_ball_path_clear(The_game_window,The_field,list_of_ingamers)
 
-                if path_for_ball_check == 1 :
+                if test_ball_free_path == 1 :
                     list_of_ingamers[ball_index].speed = 2
                 else:
                     list_of_ingamers[ball_index].speed = 0
 
             # hrac odejde od mice => jiz neni jeho vlastnik
-            if pygame.sprite.collide_circle(self, list_of_ingamers[ball_index]) == False:
+            if pythagoras_distance (list_of_ingamers[ball_index].rect.center,  self.rect.center) > (list_of_ingamers[ball_index].radius + self.radius) + 3:
+            #if pygame.sprite.collide_circle(self, list_of_ingamers[ball_index]) == False:
                   list_of_ingamers[ball_index].reset_owner(self)
 
-        # detekce ostatnich hracu
-        for no_of_ingamers in range (0,len(list_of_ingamers)):
+        # detekce ostatnich hracu # vynecha 'sebe' v kontrolre kolize , vynecha mic index '0' v list_of_ingamers
+        for no_of_ingamers in range (1,len(list_of_ingamers)):
 
             # vynecha 'sebe' v kontrolre kolize , vynecha mic index '0' v list_of_ingamers
-            if pygame.sprite.collide_circle(self, list_of_ingamers[no_of_ingamers]) and \
-                list_of_ingamers[no_of_ingamers].rect.center != self.rect.center and no_of_ingamers > 0 :
 
-                self.rect.center =  [ self.rect.center[0] - self.velocity[0]  ,self.rect.center[1] - self.velocity[1]  ]
+            # if pygame.sprite.collide_circle(self, list_of_ingamers[no_of_ingamers]) and \
+            #     list_of_ingamers[no_of_ingamers].rect.center != self.rect.center :
+            distance = pythagoras_distance (list_of_ingamers[no_of_ingamers].rect.center,  self.rect.center)
+            #print ("dstn a no_of_ingamers" , dstnc , no_of_ingamers)
+            if distance <= 2*self.radius + 1 and distance > 0 :
+                test_player_free_path = 0
+
 
         # pokud jsou  podminky splneny hrac se muze pohnout
-        if test_target_on_field != 1 or path_for_ball_check != 1:
-            self.rect.center =  [ self.rect.center[0] + self.velocity[0]  ,self.rect.center[1]  + self.velocity[1]  ]
+        if test_target_on_field == 1 and test_ball_free_path == 1 and test_player_free_path == 1:
 
+            self.rect.center =  [self.rect.center[0] + self.velocity[0], self.rect.center[1] + self.velocity[1]]
 
-    def draw_data_lower_menu (self,The_game_window,The_field,list_of_ingamers):
+    def draw_data_lower_menu (self,The_game_window,The_field,list_of_ingamers):                                            # opravit nema byt metoda ale funkce v screens, vykreslovani
         f_print_player_details(The_game_window,The_field,self,list_of_ingamers)
 
         # zobrazeni hodnot jen pro tesy mozna LAB_mode
@@ -402,22 +398,21 @@ class player (ingamer):
 
     '''
 
-#--------------------------------------------------------------------------------------------class ball
-# trida pro Mic
+#-------------------------------------------------------------------------------class ball
 class ball (ingamer):
     radius = 7
     team_type = "AI" #  mic je neklikatelny
     resistance = 1          # udava jak mic zpomaluje  ---zatim nevyuzito---
-    color = white
+    color = WHITE
     owner = 'nooneyet'
     speed = 0
 
-    def draw_data_lower_menu (self,The_game_window,The_field,list_of_ingamers):
+    def draw_data_lower_menu (self,The_game_window,The_field,list_of_ingamers):                                         # opravit nema byt metoda ale funkce v screens, vykreslovani
         f_print_ball_details(The_game_window,The_field,self,list_of_ingamers)
 
     # kontrola pro hrace kdyz nemuze udelat krok, protoze mic nema misto kam se posunout
     # path v instanci je uz novy od metody move od hrace
-    def is_ball_path_clear(self,The_game_window,The_field,list_of_ingamers):                                          #opakujicis se kod pro preponu kolize
+    def is_ball_path_clear(self,The_game_window,The_field,list_of_ingamers):                                            #opakujicis se kod pro preponu kolize
         decision = 1
 
         bottom = The_field.field_bl_corner[1]
@@ -448,19 +443,16 @@ class ball (ingamer):
 
         return decision
 
-    # vynulovani vlastnika mice
     def reset_owner(self,player):
         if self.owner == player:
             self.owner = 0
-            self.color = white
+            self.color = WHITE
             player.ball_owner_b = False
 
-    # nastaveni vlatnika mice
     def set_owner(self,new_owner):
-
         new_owner.ball_owner_b = True
         self.owner = new_owner
-        self.color = green
+        self.color = GREEN
         self.field_site = new_owner.field_site
 
     # pohyb mice,podobny pohybu hrace, ale mic se muze odrazet od prekazek
@@ -473,7 +465,7 @@ class ball (ingamer):
         if self.speed > 2 :
             # kdyz krac mic odkopne ,mic ztraci vlatnika
             self.owner = 0
-            self.color = white
+            self.color = WHITE
 
         step = self.step
         bottom = The_field.field_bl_corner[1]
