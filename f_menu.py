@@ -1,13 +1,21 @@
 import pygame
 import os.path
 from os import path
+from threading import  Thread
+
+import screens
+from screens import *
 
 import neural_network
 from neural_network import *
+import reinforsment_learning
+from reinforsment_learning import *
 import support_functions
 from support_functions import *
 import xml_f
 from xml_f import *
+
+
 
 
 #pygame modul
@@ -15,45 +23,39 @@ pygame.init()
 from pygame.locals import *
 
 # fonty
-TestFont = pygame.font.SysFont("Arial", 5)
-MenuFont = pygame.font.SysFont("Arial", 18)
-CreateNo_Font = pygame.font.SysFont("Arial", 15)
-MenuFont_heading = pygame.font.SysFont("Arial", 30)
-WelcomeFont = pygame.font.SysFont("Arial", 40)
+TEST_FONT = pygame.font.SysFont("Arial", 5)
+MENU_FONT = pygame.font.SysFont("Arial", 18)
+CREATENO_FONT = pygame.font.SysFont("Arial", 15)
+MENU_FONT_HEADING = pygame.font.SysFont("Arial", 30)
+WELCOME_FONT = pygame.font.SysFont("Arial", 40)
 
 
-
-def get_font(font_original ,resolution):                                            #neni uplne efektivni lip dat do window primo
+def get_font(font_original, resolution):                                              #neni uplne efektivni lip dat do window primo funkci predelat
     ratio = 1
-    if font_original == "TestFont":
+    if font_original == "TEST_FONT":
         font_scaled = pygame.font.SysFont("Arial", 5 * ratio)
-    elif font_original == "MenuFont":
+    elif font_original == "MENU_FONT":
         font_scaled = pygame.font.SysFont("Arial", 18 * ratio)
-    elif font_original == "MenuFont_heading":
+    elif font_original == "MENU_FONT_HEADING":
         font_scaled = pygame.font.SysFont("Arial", 30 * ratio)
-    elif font_original == "WelcomeFont":
+    elif font_original == "WELCOME_FONT":
         font_scaled = pygame.font.SysFont("Arial", 40 * ratio)
     return font_scaled
 
-
-
-
-#--------------------------------------------------------------------------------------------class buttons
+#-------------------------------------------------------------------------------class buttons
 # trida pro tlacika
-class button():
-
+class Button():
     def __init__(self):
         self.number = 0         # id tlacitka
         self.x_corner = 0       # souradnice
         self.y_corner = 0
-        self.size = [10,10]     # velikost tlacitka: lenght, hight
+        self.size = [10, 10]     # velikost tlacitka: lenght, hight
         self.name ='n'          # popisek (text) tlacitka
         self.graphic = "notset" # zatim nepouzito priprava pro pixel art
         self.frame = False      # pravidla zobrazeni ramecku
         self.selected = False
 
-
-    def set_selected_status(self,new_status):
+    def set_selected_status(self,new_status):                                                       # mel by se menovat set status => vic univerzalni
         self.selected = new_status
 
     # nastaveni tlacitka
@@ -62,45 +64,46 @@ class button():
         self.number = number
 
     # kontrola kliku na tlacitko
-    def is_mouse_over_button (self,mouse_position,screen_ID_lower_screen,menu_on_screen):
+    def is_mouse_over_button (self,mouse_position,screen_ID_lower_screen,menu_on_screen):                                 # pouzit enums na misto cisel<<<
         decision = "nomatch"  # error hodnota
         mouse_x = mouse_position[0]
         mouse_y = mouse_position[1]
         screen_ID = screen_ID_lower_screen[0]
         lower_screen_ID = screen_ID_lower_screen[1]
 
-        if mouse_x > self.x_corner   and mouse_x < self.x_corner  + self.size[0]:
-            if mouse_y > self.y_corner   and mouse_y  <  self.y_corner  + self.size[1] :
+        if mouse_x > self.x_corner and mouse_x < self.x_corner + self.size[0]:
+            if mouse_y > self.y_corner and mouse_y < self.y_corner + self.size[1]:
                 decision = self.number
 
                 # kontrola pro 2 tlacitka na stejnem miste v ruznych SCREENS
                 # > 1 znamena button neni z hlavniho menu
                 if  decision > 1:
-                    if trunc(decision) == screen_ID :
-                        decision == self.number
+                    if trunc(decision) == screen_ID:
+                        decision == self.number                                                                           # zKONTROLUUUJJJ !!!!!!!!!!!!!!!!!
                     else:
                         if decision == 15.1:
                             decision = 15.1
                         else:
-                            if trunc(decision) == 21 and  screen_ID == screens.teammanagement.value and \
-                                lower_screen_ID == screens.teammanagementedit.value :
-
+                            if trunc(decision) == 21 and \
+                                    screen_ID == Screens.teammanagement.value and \
+                                    lower_screen_ID == Screens.teammanagementedit.value:
                                 decision == self.number
 
-                            elif (trunc(decision) == 23 or trunc(decision) == 24) and  screen_ID == screens.teammanagement.value and \
-                                lower_screen_ID == screens.teammanagementcreate.value :
+                            elif (trunc(decision) == 23 or trunc(decision) == 24) and \
+                                    screen_ID == Screens.teammanagement.value and \
+                                    lower_screen_ID == Screens.teammanagementcreate.value:
+                                decision == self.number                                                                      # zKONTROLUUUJJJ !!!!!!!!!!!!!!!!!
 
+                            elif trunc(decision) == 42 and \
+                                    screen_ID == Screens.trening.value:
                                 decision == self.number
-                            elif trunc(decision) == 42 and  screen_ID == screens.trening.value :
-                                decision == self.number
-
+                                                                                                                           # zKONTROLUUUJJJ !!!!!!!!!!!!!!!!!
                             else:
                                 decision = "nomatch"
 
                 # pri hre
-                if  screen_ID == screens.ingame.value and trunc(self.number) == 0 and menu_on_screen == False:
+                if  screen_ID == Screens.ingame.value and trunc(self.number) == 0 and menu_on_screen == False:
                     decision = "nomatch"
-
 
         return decision
 
@@ -109,17 +112,15 @@ class button():
 # vytvoreni instanci tlacitek
 # tlacitka pro ostatni volby
 def create_buttons_instances(The_game_window,The_field):
-
     buttons_names_list = all_buttons_names(The_game_window.language)
     buttons_ids = all_buttons_IDs()
-
     list_buttons_instances = []     # list vsech instanci tridy button pro hru
     ref_buttons_counter = 0         # pocitadlo tlacitek rozhodtico v prubehu hry
     ref_buttons_counter2 = 0
     mngmnt_buttons_counter = 0      # pocitadlo tlacitek team management stranky
     mngmntedit_buttons_counter = 0
     trening_buttons_counter = 0     # pocitadlo tlacitek trenovani teamu
-    treningman_buttons_counter = 2
+    treningman_buttons_counter = 0
     choose_teams_counter = 0        # pocitadlo tlacitek vyberu teamu do hry
     mngmntaway_buttons_counter = 8
     mngmntcreate_buttons_counter = 0
@@ -132,11 +133,11 @@ def create_buttons_instances(The_game_window,The_field):
 
     # generovani tlacitek
     for generating_buttons_loop in range (0,len(buttons_names_list)):
-        new_button = button()
+        new_button = Button()
         # format se upravi pro buttons ktere nejsou v menu  (popisek tlacitka se vycentruje )
         button_name_original = buttons_names_list [generating_buttons_loop]
-        button_name_corrected = center_button_name( button_name_original) if generating_buttons_loop > 15 else button_name_original
-        new_button.set_button_name_number (button_name_corrected, buttons_ids[generating_buttons_loop])
+        button_name_centered = center_button_name( button_name_original) if generating_buttons_loop > 15 else button_name_original
+        new_button.set_button_name_number (button_name_centered, buttons_ids[generating_buttons_loop])
         new_button.frame = True
         list_buttons_instances.append(new_button)
 
@@ -149,7 +150,7 @@ def create_buttons_instances(The_game_window,The_field):
             new_button.y_corner = The_game_window.heading_shift + generating_buttons_loop  * The_game_window.menu_line_spacing
 
         #  team management tlacitka
-        elif trunc(buttons_ids[generating_buttons_loop]) ==  screens.teammanagement.value:
+        elif trunc(buttons_ids[generating_buttons_loop]) ==  Screens.teammanagement.value:
             new_button.size = [mngmnt_button_width,mngmnt_button_height]
             new_button.x_corner = The_game_window.game_menu_x_end + The_game_window.mngmt_shift_from_menu +  \
                                      mngmnt_buttons_counter * The_game_window.mngmt_column_width
@@ -164,7 +165,7 @@ def create_buttons_instances(The_game_window,The_field):
                 mngmnt_buttons_counter =  mngmnt_buttons_counter + 1
 
         #  team managementaway
-        elif trunc(buttons_ids[generating_buttons_loop]) ==  screens.teammanagementaway.value:
+        elif trunc(buttons_ids[generating_buttons_loop]) ==  Screens.teammanagementaway.value:
             new_button.size = [mngmnt_button_width,mngmnt_button_height]
             new_button.x_corner = The_game_window.game_menu_x_end + The_game_window.mngmt_shift_from_menu +  \
                                      mngmntaway_buttons_counter * The_game_window.mngmt_column_width
@@ -174,7 +175,7 @@ def create_buttons_instances(The_game_window,The_field):
             #mngmntaway_buttons_counter = mngmntaway_buttons_counter + 1
 
         #  team managementedit player tlacitka
-        elif trunc(buttons_ids[generating_buttons_loop]) ==  screens.teammanagementedit.value:
+        elif trunc(buttons_ids[generating_buttons_loop]) ==  Screens.teammanagementedit.value:
             new_button.size = [mngmnt_button_width,mngmnt_button_height]
             new_button.x_corner = The_game_window.game_menu_x_end + The_game_window.mngmt_shift_from_menu +  \
                                      mngmntedit_buttons_counter * The_game_window.mngmt_column_width
@@ -183,7 +184,7 @@ def create_buttons_instances(The_game_window,The_field):
             mngmntedit_buttons_counter =  mngmntedit_buttons_counter + 1
 
         #  team managementcreate player tlacitka
-        elif trunc(buttons_ids[generating_buttons_loop]) ==  screens.teammanagementcreate.value:
+        elif trunc(buttons_ids[generating_buttons_loop]) ==  Screens.teammanagementcreate.value:
             new_button.size = [mngmnt_button_width ,mngmnt_button_height]
             new_button.x_corner = The_game_window.game_menu_x_end + The_game_window.mngmt_shift_from_menu +  \
                                      mngmntcreate_buttons_counter  * new_button.size[0]
@@ -192,7 +193,7 @@ def create_buttons_instances(The_game_window,The_field):
             mngmntcreate_buttons_counter =  mngmntcreate_buttons_counter + 1
 
         #  team managementcreateNo player tlacitka
-        elif trunc(buttons_ids[generating_buttons_loop]) ==  screens.teammanagementcreateNo.value:
+        elif trunc(buttons_ids[generating_buttons_loop]) ==  Screens.teammanagementcreateNo.value:
             #mngmntcreateNo_buttons_counter_x = int( 6 ) if buttons_ids[generating_buttons_loop] == 24.01 else int(mngmntcreateNo_buttons_counter_x)
 
             new_button.size = [int(mngmnt_button_width/3),mngmnt_button_height]
@@ -207,7 +208,7 @@ def create_buttons_instances(The_game_window,The_field):
                 mngmntcreateNo_buttons_counter_x =  mngmntcreateNo_buttons_counter_x + 1
 
         # reff behem hry
-        elif trunc(buttons_ids[generating_buttons_loop]) == screens.ingame.value:
+        elif trunc(buttons_ids[generating_buttons_loop]) == Screens.ingame.value:
             new_button.size = [60,mngmnt_button_height]
             new_button.x_corner = The_field.field_bl_corner [0] +  ref_buttons_counter * The_game_window.mngmt_column_width
             new_button.y_corner =  The_field.field_bl_corner[1] + (ref_buttons_counter2 + 3) * The_game_window.menu_line_spacing
@@ -218,7 +219,7 @@ def create_buttons_instances(The_game_window,The_field):
 
 
         # vyber teamu do hry
-        elif trunc(buttons_ids[generating_buttons_loop]) == screens.teamsconfirmation.value:
+        elif trunc(buttons_ids[generating_buttons_loop]) == Screens.teamsconfirmation.value:
             new_button.size = [60,mngmnt_button_height]
             new_button.x_corner = The_game_window.game_menu_x_end + The_game_window.mngmt_shift_from_menu + \
                                   choose_teams_counter * The_game_window.mngmt_column_width
@@ -226,32 +227,41 @@ def create_buttons_instances(The_game_window,The_field):
             choose_teams_counter = choose_teams_counter + 1
 
         # trenovani teamu
-        elif trunc(buttons_ids[generating_buttons_loop]) == screens.trening.value:
+        elif trunc(buttons_ids[generating_buttons_loop]) == Screens.trening.value:
             new_button.size = [mngmnt_button_width ,mngmnt_button_height]
             new_button.x_corner = The_game_window.game_menu_x_end + The_game_window.mngmt_shift_from_menu + \
                                      trening_buttons_counter * The_game_window.mngmt_column_width
             new_button.y_corner =  The_game_window.heading_shift +(1+ The_game_window.team_detail_lines ) *  \
                                     The_game_window.mngmt_text_ratio *  The_game_window.menu_line_spacing
             trening_buttons_counter = trening_buttons_counter + 2
-            if buttons_ids[generating_buttons_loop] != 4.1:
+            if buttons_ids[generating_buttons_loop] != 4.10  :
                 new_button.size[0] = 1.5 * mngmnt_button_width
 
         # trenovani-manual teamu   # !counter pricita 1/3 !
-        elif trunc(buttons_ids[generating_buttons_loop]) == screens.treningmanual.value:
+        elif trunc(buttons_ids[generating_buttons_loop]) == Screens.treningmanual.value:
+            lines = 26 if treningman_buttons_counter >= 8 else 25
+            if treningman_buttons_counter == 0:
+                shift_x = 0
+            first_button_x = The_game_window.game_menu_x_end + The_game_window.mngmt_shift_from_menu + \
+                                     2* The_game_window.mngmt_column_width
+
+            center_button_name( button_name_original) if generating_buttons_loop > 15 else button_name_original
             new_button.size = [int(mngmnt_button_width/3) ,mngmnt_button_height]
-            if treningman_buttons_counter <= 3 or treningman_buttons_counter == 4.99 :
+            if new_button.number <= 42.02 or new_button.number == 42.09 :
                 new_button.size[0] = mngmnt_button_width
 
-            new_button.x_corner = The_game_window.game_menu_x_end + The_game_window.mngmt_shift_from_menu + \
-                                     treningman_buttons_counter * The_game_window.mngmt_column_width
-            new_button.y_corner =  25 *  The_game_window.menu_line_spacing
-            if treningman_buttons_counter <= 3 or treningman_buttons_counter == 4.99:
-                treningman_buttons_counter = treningman_buttons_counter + 1
-            else:
-                treningman_buttons_counter = treningman_buttons_counter + 0.33
+            new_button.x_corner = first_button_x + shift_x
+            new_button.y_corner =  lines *  The_game_window.menu_line_spacing
+
+            shift_x = shift_x + new_button.size[0]
+            if treningman_buttons_counter == 7 :
+                shift_x = The_game_window.mngmt_column_width
+
+            treningman_buttons_counter = treningman_buttons_counter + 1
+
 
         # zobrazeni menu
-        elif trunc(buttons_ids[generating_buttons_loop]) == screens.help.value:
+        elif trunc(buttons_ids[generating_buttons_loop]) == Screens.help.value:
             new_button.frame = True
             new_button.size = [100,22]
             new_button.x_corner = 0
@@ -275,54 +285,40 @@ def draw_button_No(The_game_window,button_no):
         if The_game_window.buttons[button_no].frame == True :
 
             if True:
-                rectangle_details = [The_game_window.buttons[button_no].x_corner +2 ,The_game_window.buttons[button_no].y_corner, \
-                                    The_game_window.buttons[button_no].size[0] -4 ,The_game_window.buttons[button_no].size[1]-2]
+                rectangle_details = [The_game_window.buttons[button_no].x_corner + 2 ,The_game_window.buttons[button_no].y_corner, \
+                                    The_game_window.buttons[button_no].size[0] - 4, The_game_window.buttons[button_no].size[1] - 2]
 
-                #button_ellipse = pygame.draw.rect(The_game_window.surface, green_field, rectangle_details ,1,border_top_left_radius = 1 )
-                button_background = pygame.draw.rect(The_game_window.surface, grey_buttons, rectangle_details, 0, 5 )
+                button_background = pygame.draw.rect(The_game_window.surface, GREY_BUTTONS, rectangle_details, 0, 5)
 
-            if False:
-                # TESTY kontrola vykreslovani
-                test_print_x = TestFont.render("x", 1, red)
-                The_game_window.surface.blit(test_print_x,(The_game_window.buttons[button_no].x_corner, The_game_window.buttons[button_no].y_corner))
-                # kriz
-                cross_height = 10
-                cross_lenght = 20
-
-                pygame.draw.lines(The_game_window.surface,  grey, True, ((The_game_window.buttons[button_no].x_corner -2, The_game_window.buttons[button_no].y_corner + 10  ) , \
-                                                                         (The_game_window.buttons[button_no].x_corner -2, The_game_window.buttons[button_no].y_corner +25  )), 1)
-
-                pygame.draw.lines(The_game_window.surface,  grey, True, ((The_game_window.buttons[button_no].x_corner -7,The_game_window.buttons[button_no].y_corner + 20) , \
-                                                                         (The_game_window.buttons[button_no].x_corner +20,The_game_window.buttons[button_no].y_corner + 20 )), 1)
-
-        button_name = MenuFont.render(The_game_window.buttons[button_no].name, 1, grey)
-        The_game_window.surface.blit(button_name,(The_game_window.buttons[button_no].x_corner, The_game_window.buttons[button_no].y_corner))
+        button_name = MENU_FONT.render(The_game_window.buttons[button_no].name, 1, GREY)
+        The_game_window.surface.blit(button_name,(The_game_window.buttons[button_no].x_corner, \
+                                                    The_game_window.buttons[button_no].y_corner))
 
 
 # vykresli hlavni menu
 def draw_main_menu(The_game_window):
     # pocet tlacitek hlavniho menu
-    main_menu_buttons = 17
+    MAIN_MENU_BUTTONS = 17
 
     # menu nadpis
     menu_heading = "GAME MENU"
-    menu_menu_heading_pages = MenuFont_heading.render(menu_heading, 1, green_field)
-    The_game_window.surface.blit(menu_menu_heading_pages,(The_game_window.game_menu_x_start, 0.25 *The_game_window.menu_line_spacing))
+    menu_menu_heading_pages = MENU_FONT_HEADING.render(menu_heading, 1, GREEN_FIELD)
+    The_game_window.surface.blit(menu_menu_heading_pages,(The_game_window.game_menu_x_start, 0.25 * The_game_window.menu_line_spacing))
 
     # Loop pro vypsani celeho menu
-    for menu_loop in range(0,main_menu_buttons):
+    for menu_loop in range(0,MAIN_MENU_BUTTONS):
         draw_button_No(The_game_window, menu_loop)
 
         if menu_loop <10:
             # TESTY kontrola vykreslovani
-            test_print_x = TestFont.render("x", 1, red)
-            The_game_window.surface.blit(test_print_x,(The_game_window.game_menu_x_start, \
+            test_print_x = TEST_FONT.render("x", 1, RED)
+            The_game_window.surface.blit(test_print_x, (The_game_window.game_menu_x_start, \
                                                         menu_loop * The_game_window.menu_line_spacing + The_game_window.heading_shift))
 
 
 '''
 PLAN VYPRACOVANI
-Rozdeleni okna aplikace 4x ruzne plochy
+Rozdeleni okna aplikace 4x ruzne plochy (4 x ID area)
  ___________________         ___________________
 | 1 | 3             |       | 4                 |
 |   |               |       |                   |
@@ -333,20 +329,30 @@ Rozdeleni okna aplikace 4x ruzne plochy
 '''
 
 # okno rozdeleno na 3 casti
-def draw_menu_lines_ID_3(The_game_window):
+def draw_menu_lines_ID_3(The_game_window,screen_ID):
     #rozdeleni obrazovky aplikace
-    pygame.draw.rect(The_game_window.surface, white , (0, 0, The_game_window.window_width, The_game_window.window_height),  1)
-    pygame.draw.lines(The_game_window.surface,  grey, True, ((The_game_window.game_menu_x_end,0 ) , \
-                                                             ( The_game_window.game_menu_x_end  ,The_game_window.game_menu_y_end )), 1)
-    pygame.draw.lines(The_game_window.surface,  grey, True, ((0 ,The_game_window.game_menu_y_end ) ,  \
-                                                             (The_game_window.window_width ,The_game_window.game_menu_y_end)), 1)
+    pygame.draw.rect(The_game_window.surface, WHITE, \
+                        (0, 0, The_game_window.window_width, The_game_window.window_height), 1)
+    pygame.draw.lines(The_game_window.surface, GREY, \
+                        True, ((The_game_window.game_menu_x_end, 0), \
+                       (The_game_window.game_menu_x_end, The_game_window.game_menu_y_end)), 1)
+
+    if screen_ID == Screens.trening.value:
+        line_lenght = The_game_window.game_menu_x_end + 7.5*The_game_window.mngmt_column_width \
+                        + The_game_window.mngmt_shift_from_menu
+    else:
+        line_lenght =  The_game_window.window_width
+
+    pygame.draw.lines(The_game_window.surface, GREY, \
+                       True, ((0 ,The_game_window.game_menu_y_end),  \
+                       (line_lenght, The_game_window.game_menu_y_end)), 1)
 
 # zapas => menu je ukryto - okno rozdeleno na 2 casti
 def draw_menu_lines_ID_4(The_game_window):
     #rozdeleni obrazovky aplikace
-    pygame.draw.rect(The_game_window.surface, white , (0 ,0 ,The_game_window.window_width, The_game_window.window_height ),  1)
-    pygame.draw.lines(The_game_window.surface,  grey, True, ((0 ,The_game_window.game_menu_y_end ) ,  \
-                                                             (The_game_window.window_width ,The_game_window.game_menu_y_end)), 1)
+    pygame.draw.rect(The_game_window.surface, WHITE , (0, 0, The_game_window.window_width, The_game_window.window_height), 1)
+    pygame.draw.lines(The_game_window.surface,  GREY, True, ((0, The_game_window.game_menu_y_end ),  \
+                                                             (The_game_window.window_width, The_game_window.game_menu_y_end)), 1)
 
 
 # volani funkce/metody dle volby z menu(tlacitek)
@@ -367,84 +373,81 @@ def f_menu_selected(position_clicked,The_game_window,The_field,The_reff,screen_I
 
         # trener
         if  button_selected == 0.10:  #testy
-            print("gamestatsus"  ,"teamtype"   ,"team" ,"  playertype" , "model" )
-            print(vars(The_reff))
-            for no_of_ingamers in range (1,len(The_reff.list_of_ingamers)):#testy
-                print(The_reff.list_of_ingamers[no_of_ingamers].game_status, \
-                The_reff.list_of_ingamers[no_of_ingamers].team_type , \
-                The_reff.list_of_ingamers[no_of_ingamers].team , \
-                The_reff.list_of_ingamers[no_of_ingamers].player_type  , \
-                The_reff.list_of_ingamers[no_of_ingamers].model )
+            draw_5aside_field(The_game_window,The_field,Screens.intrening.value)
+            draw_field_sectors(The_game_window,The_field)
+            draw_field_subsectors(The_game_window,The_field)
+            screen = Screens.intrening.value
+            The_game_window.menu_on_screen = False
 
-        elif  button_selected == 0.11 :
+        elif  button_selected == 0.11:
             The_reff.coach_team_A.reset_selected_slot_team_management()
-            screen = screens.teammanagement.value
+            screen = Screens.teammanagement.value
 
             #testy
 
             for llloptest in range(0,10):
-                if The_reff.coach_team_A.loaded_teams_xml [llloptest] != saving_type.empty_team_slot.value:
+                if The_reff.coach_team_A.loaded_teams_xml[llloptest] != SavingType.empty_team_slot.value:
                     for llloptest2 in range(0,6):
-                        print (The_reff.coach_team_A.loaded_teams_xml [llloptest][llloptest2])
+                        print (The_reff.coach_team_A.loaded_teams_xml[llloptest][llloptest2])
 
-        elif  button_selected == 0.12 :
+        elif  button_selected == 0.12:
             The_reff.coach_team_A.reset_selected_slot_team_management()
-            screen = screens.trening.value
-        elif  button_selected == 0.13 :
+            screen = Screens.trening.value
+        elif  button_selected == 0.13:
             The_reff.coach_team_B.reset_selected_slot_team_management()
-            screen = screens.teammanagementaway.value
-        elif  button_selected == 0.14 :
-            screen = screens.stats.value
+            screen = Screens.teammanagementaway.value
+        elif  button_selected == 0.14:
+            screen = Screens.stats.value
         # reff
-        elif  button_selected == 0.20 : #testy
-            The_reff.teams_for_game  = ["C","B","H","H"]
-            The_reff.start_match (The_game_window,The_field,True)
+        elif  button_selected == 0.20: #testy
+            The_reff.teams_for_game = ["C","B","H","H"]
+            The_reff.start_match (The_field,True)
             The_game_window.menu_on_screen = False
-            screen = screens.ingame.value
+            screen = Screens.ingame.value
 
-        elif  button_selected == 0.21 :
+        elif  button_selected == 0.21:
             pass
-        elif  button_selected == 0.22 :
+        elif  button_selected == 0.22:
             #The_reff.set_teams_type_for_game("H/H")
             #The_reff.coach_team_A.loaded_teams_xml[0][0][2] = "selected"
             #The_reff.coach_team_A.loaded_teams_xml[1][0][2] = "selected"
             if The_reff.count_selected_teams() != 2:
-                screen = screens.error.value                                        #oprav na   draw_teams_selection_error
+                screen = Screens.error.value                                        #oprav na   draw_teams_selection_error
             else:
                 The_reff.load_teams_for_game_to_slot()
-                screen = screens.teamsconfirmation.value
+                screen = Screens.teamsconfirmation.value
 
-        elif  button_selected == 0.23 :
+        elif  button_selected == 0.23:
             pass
-        elif  button_selected == 0.24 :
+        elif  button_selected == 0.24:
             if The_reff.game_type != "none":
-                #screen = screens.ingame.value # zpet na zapas pokud nebyl ukoncen
+                #screen = Screens.ingame.value # zpet na zapas pokud nebyl ukoncen
                 The_game_window.menu_on_screen = False
         # nastaveni
-        elif  button_selected == 0.30 :
+        elif  button_selected == 0.30:
             pass
-        elif  button_selected == 0.31 :
+        elif  button_selected == 0.31:
             The_game_window.swap_language()
             The_game_window.buttons = create_buttons_instances(The_game_window,The_field)
-        elif  button_selected == 0.32 :
+        elif  button_selected == 0.32:
             #The_game_window.set_window_size(The_field)                                # testovaci hodnoty
             pass
         # lab mode
-        elif  button_selected == 0.40 :
+        elif  button_selected == 0.40:
             pass
-        elif  button_selected == 0.41 :
+        elif  button_selected == 0.41:
             pass
-        elif  button_selected == 0.42 :
+        elif  button_selected == 0.42:
             pass
-        elif  button_selected == 0.5 :#napoveda
+        elif  button_selected == 0.5: #napoveda
             The_game_window.menu_on_screen = False
-            screen = screens.help.value
+            screen = Screens.help.value
 
     ## tlacitka  hry pro reff
-    if trunc(button_selected) == screens.ingame.value :
+    if trunc(button_selected) == Screens.ingame.value :
         if  button_selected == 71.10 :
             The_reff.pause_game()#The_game_window,The_field)
-            screen = screens.ingame.value
+            screen = Screens.ingame.value
         if  button_selected == 71.20 :
             The_reff.unpause_game(The_game_window,The_field)
         if  button_selected == 71.30 :#testy
@@ -456,7 +459,7 @@ def f_menu_selected(position_clicked,The_game_window,The_field,The_reff,screen_I
 
 
     ## tlacitka  team management
-    if  trunc(button_selected) == screens.teammanagement.value  and screen == screens.teammanagement.value:
+    if  trunc(button_selected) == Screens.teammanagement.value  and screen == Screens.teammanagement.value:
         if  button_selected == 2.10 :
             The_reff.coach_team_A.delete_player_from_slot()
         if  button_selected == 2.20 :
@@ -466,19 +469,19 @@ def f_menu_selected(position_clicked,The_game_window,The_field,The_reff,screen_I
         if  button_selected == 2.40 :#edit
                 The_game_window.buttons[index_button_loop].set_selected_status(True)
                 The_game_window.buttons[index_button_loop + 1].set_selected_status(False)
-                lower_screen = screens.teammanagementedit.value
+                lower_screen = Screens.teammanagementedit.value
         if  button_selected == 2.50 :#create
                 The_game_window.buttons[index_button_loop].set_selected_status(True)
                 The_game_window.buttons[index_button_loop - 1].set_selected_status(False)
-                lower_screen = screens.teammanagementcreate.value
+                lower_screen = Screens.teammanagementcreate.value
         if  button_selected == 2.60 :
             The_reff.coach_team_A.choose_team_from_selection()
         if  button_selected == 2.70 :
             The_reff.coach_team_A.save_team_from_teammngmt_table()
 
     ## tlacitka  team managementedit
-    if  trunc(button_selected) == screens.teammanagementedit.value  and screen == screens.teammanagement.value \
-        and lower_screen == screens.teammanagementedit.value :
+    if  trunc(button_selected) == Screens.teammanagementedit.value  and screen == Screens.teammanagement.value \
+            and lower_screen == Screens.teammanagementedit.value :
 
         if  button_selected == 21.10 :#GK
             The_reff.coach_team_A.edit_player_position(1)
@@ -492,8 +495,8 @@ def f_menu_selected(position_clicked,The_game_window,The_field,The_reff,screen_I
             The_reff.coach_team_A.edit_player_position(5)
 
     ## tlacitka  team managementcreate
-    if  trunc(button_selected) == screens.teammanagementcreate.value  and screen == screens.teammanagement.value \
-        and lower_screen == screens.teammanagementcreate.value :
+    if  trunc(button_selected) == Screens.teammanagementcreate.value  and screen == Screens.teammanagement.value \
+            and lower_screen == Screens.teammanagementcreate.value :
 
         if  button_selected == 23.10 :
             The_reff.coach_team_A.create_new_player() #vytv hrace
@@ -501,8 +504,8 @@ def f_menu_selected(position_clicked,The_game_window,The_field,The_reff,screen_I
             The_reff.coach_team_A.create_new_player()
 
     ## tlacitka  team managementcreateNo
-    if  trunc(button_selected) == screens.teammanagementcreateNo.value  and screen == screens.teammanagement.value \
-        and lower_screen == screens.teammanagementcreate.value :
+    if  trunc(button_selected) == Screens.teammanagementcreateNo.value  and screen == Screens.teammanagement.value \
+        and lower_screen == Screens.teammanagementcreate.value :
         string_number = str (button_selected)
         dot_index = string_number.index('.')
         if button_selected ==24.1:
@@ -515,13 +518,13 @@ def f_menu_selected(position_clicked,The_game_window,The_field,The_reff,screen_I
 
 
     ## tlacitka  team management
-    if  trunc(button_selected) == screens.teammanagementaway.value  and screen == screens.teammanagementaway.value:
+    if  trunc(button_selected) == Screens.teammanagementaway.value  and screen == Screens.teammanagementaway.value:
         if  button_selected == 22.10 :
             The_reff.coach_team_B.choose_team_from_selection()
 
 
     ## tlacitka  vyber teamu do hry
-    if  trunc(button_selected) == screens.teamsconfirmation.value and screen == screens.teamsconfirmation.value:
+    if  trunc(button_selected) == Screens.teamsconfirmation.value and screen == Screens.teamsconfirmation.value:
         if  button_selected == 7.10 :
             The_reff.set_teams_type_for_game("H/AI")
         if  button_selected == 7.20 :
@@ -533,9 +536,9 @@ def f_menu_selected(position_clicked,The_game_window,The_field,The_reff,screen_I
         if  button_selected == 7.40 :
             #hra lze zacit pouze s 2 teamy
             if  The_reff.count_selected_teams() == 2:
-                The_reff.start_match (The_game_window,The_field,True)
+                The_reff.start_match (The_field,True)
                 The_game_window.menu_on_screen = False
-                screen = screens.ingame.value
+                screen = Screens.ingame.value
         if  button_selected == 7.50 :#reset  pro reff ze muze zacit nova hra
 
             The_reff.set_game_status_to_self("none")
@@ -544,65 +547,112 @@ def f_menu_selected(position_clicked,The_game_window,The_field,The_reff,screen_I
 
 
     ## tlacitka  vyber teamu do treningu
-    if  trunc(button_selected) == screens.trening.value  and screen == screens.trening.value:
+    if  trunc(button_selected) == Screens.trening.value  and screen == Screens.trening.value:
         if  button_selected == 4.10 :
             The_reff.coach_team_A.copy_player_from_slot() #ulozi trenovaneho hrace do bufferu
         # trening h/h
         if  button_selected == 4.20 :
             The_reff.set_teams_type_for_game("H/H")
-            lower_screen = screens.treningmanual.value
+            lower_screen = Screens.treningmanual.value
         # trening h/AI
         if  button_selected == 4.30 :
             The_reff.set_teams_type_for_game("AI/H")
+            lower_screen = Screens.trainingoffscreen.value
         # trening AI/AI
         if  button_selected == 4.40 :
             The_reff.set_teams_type_for_game("AI/AI")
             The_reff.coach_team_A.automated_trening_type = True
-            pass
+            The_reff.coach_team_B.automated_trening_type = True
+            lower_screen = Screens.trainingautomated.value
+
 
     ## tlacitka  vyber teamu do treningu
-    if  trunc(button_selected) == screens.treningmanual.value  and screen == screens.trening.value:
+    if  trunc(button_selected) == Screens.treningmanual.value  and screen == Screens.trening.value:
         start_training_check = [False,"empty"]
 
         #zacne trening
-        if  button_selected == 42.10 :
+        if  button_selected == 42.01 :
             start_training_check = The_reff.start_training()
             # vyhodnoceni
             if start_training_check[0] == True:
                 # prvni team je trenovany
-                The_reff.start_match(The_game_window,The_field,True)
+                The_reff.start_match(The_field,True)
                 The_reff.set_game_status_to_players()
 
+                RE_started = False
                 for ingamers_loop in range (1,len(The_reff.list_of_ingamers)):                                              #!!!udelat metodu bude treba  3x
                     # nastavi trenovaneho hrace
                     if The_reff.list_of_ingamers[ingamers_loop].ID == start_training_check[1]:
                         The_game_window.menu_on_screen = False
+                        screen = Screens.intrening.value
                         if The_reff.teams_for_game[2] == "AI" and The_reff.teams_for_game[3] == "AI":
                             The_reff.list_of_ingamers[ingamers_loop].reinforsment = True
-                            The_reff.list_of_ingamers[ingamers_loop].set_selected(False)
+
+                            coach = The_reff.list_of_ingamers[ingamers_loop].team_coach
+                            coach.move_players_for_new_training_run (The_field,The_reff.list_of_ingamers)
+
+                            # The_reff.list_of_ingamers[ingamers_loop].set_selected(False)
+
+                            # reinforsment
+                            The_reff.list_of_ingamers[ingamers_loop].reinforsment = True
+                            The_reff.list_of_ingamers[0].reinforsment = True
+
+                            #f_print_RE_trening_inprogress(The_game_window)
+                            #pygame.display.flip()
+                            The_RE_env = TrainingEnvironment()
+                            The_RE_env.load_data (The_reff.list_of_ingamers, The_reff.list_of_ingamers[ingamers_loop], The_field, The_game_window,The_reff)
+                            #model = create_model_tf2(13)
+                            model = The_reff.list_of_ingamers[ingamers_loop].model
+                            actions = 5 # hrac muze udelat 5 akci
+                            run_RE_trening(model, actions, The_RE_env,The_reff.list_of_ingamers[ingamers_loop].ID )
+                            # reset screenu po treningu
+                            screen = Screens.trening.value
+                            The_game_window.menu_on_screen = True
+                            lower_screen = Screens.trainingautomateddone.value
+                            '''
+                            if RE_started == 100:
+                                RE_started == True
+                                thread_RE_learning =  Thread (target = run_RE_trening   ,args =  (model, actions, The_RE_env))
+                                thread_RE_learning.start()
+
+
+
+
+
+                            agent = run_RE_trening_tf()
+                            agent.initialize()
+
+                            '''
                         else:
                             The_reff.list_of_ingamers[ingamers_loop].reinforsment = False
                             The_reff.list_of_ingamers[ingamers_loop].set_selected(True)
                         The_reff.list_of_ingamers[ingamers_loop].team_coach.active_trening = True
                         The_reff.list_of_ingamers[ingamers_loop].team_coach.reset_training_arrays()
-                    screen = screens.intrening.value
-                    #screen = screens.trainingoffscreen.value
+                    #screen = Screens.intrening.value
+                    #screen = Screens.trainingoffscreen.value
 
-        if button_selected >= 42.30 and  button_selected <= 42.50:
-            area_index = int(round((button_selected - 42.30),2) *10)
-            The_reff.coach_team_A.set_training_areas(1,area_index) # 1 bo nastaveni hrace
+        #print (  "---check --   plr ",  The_reff.coach_team_A.training_areas_player )
+        #print (  "---check --   bll ",  The_reff.coach_team_A.training_areas_ball )
 
-        if button_selected >= 42.70 and  button_selected <= 42.90:
-            area2_index = int(round((button_selected - 42.70),2) *10)
-            #print ("area_index",area2_index, "  button_selected  ",button_selected,     " (button_selected - 42.70)  ",(button_selected - 42.70))
-            The_reff.coach_team_A.set_training_areas(0,area2_index) # 1 bo nastaveni mice
+        # trening area
+        if button_selected >= 42.03 and  button_selected <= 42.08:
+            The_reff.coach_team_A.set_training_areas_player((round((button_selected - 42.03),2)) * 100)
+
+        if button_selected >= 42.10 and  button_selected <= 42.15:
+            The_reff.coach_team_A.set_training_areas_ball((round((button_selected - 42.10),2)) * 100)
+
+        #print (  "button_selected " ,button_selected )
+        #print (  "button_selected " ,button_selected )
+        #print (  "--- --           ---- " ,round((button_selected - 42.10),2) * 100)
+        #print (  "---check --   plr ",  The_reff.coach_team_A.training_areas_player )
+        #print (  "---check --   bll ",  The_reff.coach_team_A.training_areas_ball )
 
     ## zobrazeni schovaneho menu
-    if  trunc(button_selected) == screens.help.value :
+    if  trunc(button_selected) == Screens.help.value :
         if  button_selected == 15.10:
             The_game_window.menu_on_screen = True
-            if screen == screens.help.value:
-                screen = screens.welcome.value
+            if screen == Screens.help.value:
+                screen = Screens.welcome.value
 
     # vraci novou obrazovku dle menu nebo tlacitek                                                                                       # spustit hru
     return [screen,lower_screen]
@@ -619,8 +669,8 @@ def all_buttons_names(app_language):
         create_player = ["Generovat"  ,"level:    "  ]
         create_player_No = [ "  1","  2","  3","  4","  5","  6","  7","  8","  9"," 10"," 11"," 12"," 13"   ]
         team_managementaway_buttons = [" un/select ", ]
-        trening_buttons = ["potvrd","Manualni trening" ,"MN dyn trng h/ai ", " AUT starttrenng ai/ai"]
-        treningman_buttons = ["start","hrac zone", "  1","  2","  3","mic zone", "  1","  2","  3"]
+        trening_buttons = ["potvrd","Manualni trening" ,"MN dyn trng h/aioff screen?? ", " AUT starttrenng ai/ai"]
+        treningman_buttons = ["start","hrac zone", "  A","  B", "  C",   "  1","  2","  3","mic zone", "  A","  B", "  C",   "  1","  2","  3"]
         confirm_teams_for_game = ["H/AI" , "AI/H", "AI/AI","zacithru", "ukoncit rozehranou hru"]
         reff_at_game_buttons = ["pause", "unpause"," grid "," 3 "," 4 "]
         back_to_menu = ["MENU "]
@@ -633,7 +683,7 @@ def all_buttons_names(app_language):
         create_player_No = [ "1","2","3","4","5","6","7","8","9 ","10","11","12","13"   ]
         team_managementaway_buttons = [" un/select ", ]
         trening_buttons = ["select","MN stat trng h/h" ,"MN dyn trng h/ai ", " AUT starttrenng ai/ai"]
-        treningman_buttons = ["sstart","player zone", "  1","  2","  3","ball zone", "  1","  2","  3"]
+        treningman_buttons = ["ssstart","hrac zone", "  A","  B", "  C",   "  1","  2","  3" , "msic zone", "  A","  B", "  C",   "  1","  2","  3"]
         confirm_teams_for_game = ["H/AI" , "AI/H", "AI/AI","start game", "cancel started game"]
         reff_at_game_buttons = ["pause", "unpause"," grid "," 3 "," 4 "]
         back_to_menu = ["MENU "]
@@ -659,7 +709,7 @@ def all_buttons_IDs():
                     24.01, 24.02, 24.03, 24.04, 24.05, 24.06, 24.07, 24.08, 24.09, 24.10, 24.11, 24.12, 24.13,  \
                     22.10, \
                     4.10, 4.20, 4.30 , 4.40, \
-                    42.10, 42.20, 42.30, 42.40, 42.50, 42.60, 42.70, 42.80, 42.90 , \
+                    42.01, 42.02, 42.03, 42.04, 42.05, 42.06, 42.07, 42.08, 42.09 ,42.10, 42.11, 42.12, 42.13, 42.14,42.15,   \
                     7.10, 7.20, 7.30, 7.40, 7.50, \
                     71.10, 71.20, 71.30, 71.40, 71.50, \
                     15.10 ]
