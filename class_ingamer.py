@@ -1,4 +1,3 @@
-
 import pygame
 clock = pygame.time.Clock()
 import sys
@@ -22,11 +21,12 @@ class ingamer(pygame.sprite.Sprite):
     step = 2
     destination_move = [0,0]                                                                            #uzito?
     #lab_mode_b = 1
-    color = blue
+    color = BLUE
     collision_allowed_b = False
     selected_b = False
     team_type = "Neutral"          # H - human ,  AI , Neutral for ball and reff
     field_site = "neutral"         # L team ma vlastni branu na levo, R team ma vlastni branu na pravo
+    reinforsment = False
 
     '''
     1.uhel pocitame od brany sveho teamu , kdyz hrac stoji v uhlu 180 ,znamena ze je 'zady' k brane
@@ -189,6 +189,9 @@ class ingamer(pygame.sprite.Sprite):
         picture_test = pygame.image.load(graphic_name)
         self.image = pygame.transform.scale(picture_test, (40, 40))
 
+    def reset_graphic(self):
+        self.image = "notset"
+
     # vykresli objekt hry                                                                   # zkontroluj draw ingames and ball ??? zjednodusit
     def draw_ingamer (self,game_window):
         # kresli vision hrace - kam se diva
@@ -203,9 +206,12 @@ class ingamer(pygame.sprite.Sprite):
             vision_opposite = int(view * self.velocity[1]  * 0.8)
 
         if self.selected_b == True:
-            vision_color = red
+            vision_color = RED
         else:
-            vision_color = green
+            vision_color = GREEN
+
+        if self.reinforsment == True:
+            vision_color = BLUE
 
         pygame.draw.lines(game_window.surface, vision_color, True, ((self.rect.center[0] ,self.rect.center[1] ), \
                                 (self.rect.center[0] + vision_adjescent ,self.rect.center[1] + vision_opposite  )), 1)
@@ -213,10 +219,10 @@ class ingamer(pygame.sprite.Sprite):
 
         if self.image == "notset":
             if self.selected_b == True:
-                color = yellow_item_selected
+                color = YELLOW_SELECTED_ITEMS
             else:
                 color = self.color
-            pygame.draw.circle(game_window.surface, color, ( self.rect.center[0] ,self.rect.center[1]) ,self.radius, self.radius)
+            pygame.draw.circle(game_window.surface, color, ( self.rect.center[0] ,self.rect.center[1]) ,self.radius, 2)
 
         else:
             game_window.surface.blit(self.image, (int (self.rect.center[0] - 20      ) ,int(self.rect.center[1]   -20        )))
@@ -240,7 +246,7 @@ class ingamer(pygame.sprite.Sprite):
         x_limits = [  self.rect.center[0] - self.radius   ,  self.rect.center[0] + self.radius    ]
         y_limits = [  self.rect.center[1] - self.radius   ,  self.rect.center[1] + self.radius    ]
 
-        if f_is_clikced_on_circle(x_limits,y_limits,position_clicked) == True:
+        if is_clikced_on_circle(x_limits,y_limits,position_clicked) == True:
             return True
         else:
             return False
