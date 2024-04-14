@@ -29,7 +29,7 @@ class ingamer(pygame.sprite.Sprite):
     reinforsment = False
 
     '''
-    1.uhel pocitame od brany sveho teamu , kdyz hrac stoji v uhlu 180 ,znamena ze je 'zady' k brane
+    1.uhel pocitame od brany sveho teamu , kdyz hrac stoji v uhlu 180 ,znamena ze je 'zady' k sve brane
     2.hrac se muze nastavit pouze jednim smerem to znamena kdyz chci nastavit -20 supnu musim uzit 340   (360 -20)
     pokud je brana v pravo uhly se zrcadli aby platilo pravidlo 1
 

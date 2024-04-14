@@ -146,7 +146,7 @@ class class_coach ():
     data_labels = []
     active_trening = False              # ukazatel treningu nebo zapasu
     trening_sesion_total_runs = 50    # 5000  celkovy pocet uceni pro spusteny trening
-    RE_trening_sesion_runs = 4000
+    RE_trening_sesion_runs = 1000
     trening_repetition_sequence = 0
     trening_repetition_total = 2
     automated_trening_type = False      # true jestli je spusten zautomatizovy trening
@@ -157,6 +157,8 @@ class class_coach ():
     team_players = [0,0,0,0,0]
     testdata1 = [0,0,2,2 ]
     testdata2 = [0,0,2,2 ]
+    exit_RE_trening = False
+    arethreads_on = [False,False]
 
 
 
@@ -680,36 +682,40 @@ class class_coach ():
 
 
     def create_new_player(self):
-        # slot jsou souradnice
         # 0 index je cislo teamu z seznamu celkem misto 10 teamu
         # 1 index je poradi hrace v teamu                                                                                         #pridej kontrolu pro zakaz kopirovani prazdneho slotu
-        to_slot   = self.selected_slot_team_management
+        index_teamu = self.selected_slot_team_management[0]
+        index_hrace = self.selected_slot_team_management[1]
+        index_team_settings = 0   # cely team se sklada z pole v nem je vlastnost teamu a pak 5 jednotlivich hracu
+        #print('index_teamu ' ,index_teamu)
+        #print('index_hrace' ,index_hrace)
 
         # slot hracu, zaporne hodnoty error stavy
-        if  to_slot[1] >0 :
+        if  index_hrace > 0 :
 
-            if self.loaded_teams_xml [to_slot[0]] == SavingType.empty_player_slot.value:
+            #pokud neexistujici team vytvori novy
+            if self.loaded_teams_xml [index_teamu] == SavingType.empty_team_slot.value:
                 # pro prazny slot teamu se vytvori sablona , A = asci 65
-                self.loaded_teams_xml [to_slot[0]] = [[chr(65 + to_slot[0] ),"updated","notselected"]]                    #dodelat random nazev  teamu
+                self.loaded_teams_xml [index_teamu] = [[chr(65 + index_teamu ),"updated","notselected"]]                    #dodelat random nazev  teamu
 
+                # vytvori se prazdny team kde se pak dolni nas vytvoreny hrac
                 for loop_pl in range (1,6):
-                    self.loaded_teams_xml[to_slot[0]].append(SavingType.empty_player_slot.value)
-
+                    self.loaded_teams_xml[index_teamu].append(SavingType.empty_player_slot.value)
+                #print('TESTY ' , print_all_indexes_from_menu_TESTING (self.loaded_teams_xml , 0)  )
             # nastavi team na status updated => hrac neni ulozeny do xml file
-            self.loaded_teams_xml [to_slot[0]][0][1] = "updated"
+            #self.loaded_teams_xml [index_teamu][0][1] = "updated"
 
             #
             #  player : name, ID, position, skills level, trening time, treningcode, pocet vyher ,jak trenovan
-            new_player = create_new_random_player (copy.deepcopy(self.trainig_code),str(self.get_selected_createNos()) )
+            new_player_data = create_new_random_player_data (copy.deepcopy(self.trainig_code),str(self.get_selected_createNos()) )
 
-            self.loaded_teams_xml [to_slot[0]] [to_slot[1]] = new_player
-            #print (   self.loaded_teams_xml [to_slot[0]]     )
-            #print (new_player)
+            self.loaded_teams_xml [index_teamu] [index_hrace] = new_player_data
+            #print('loaded_teams_xml ' , self.loaded_teams_xml    )
             # vytvoreni modelu dle 'skills' hrace, pocet vstupu neural network
-            # model = create_model( self.get_selected_createNos()  )
             model = create_model_tf2( self.get_selected_createNos()  )
+            #print('skills created player ' , self.loaded_teams_xml [index_teamu] [index_hrace][3]    )
             # ulozeni dle hracova ID, date stampt ktery zaruci ze model se neulozi duplikovany                                                                    # nebude konstanta
-            model.save( get_path_home_folder() + self.loaded_teams_xml [to_slot[0]] [to_slot[1]] [1]  + ".h5")
+            model.save( get_path_home_folder() + self.loaded_teams_xml [index_teamu] [index_hrace] [1]  + ".h5")
 
         self.selected_slot_team_management = [-1,-1] # reset bufferu
 
@@ -762,11 +768,13 @@ class class_coach ():
 
             # player id dle datetime stamp
             self.loaded_teams_xml [to_slot[0]] [to_slot[1]] [1] = time.strftime("%d%m%H%M%S")
+            self.loaded_teams_xml [to_slot[0]] [to_slot[1]] [0] = players_names (randint( 0,94 ))
 
 
             # vytvoreni modelu dle 'skills' hrace, pocet vstupu neural network
             # model = create_model(   self.loaded_teams_xml [to_slot[0]] [to_slot[1]][3]   )
-            model = create_model_tf2(   self.loaded_teams_xml [to_slot[0]] [to_slot[1]][3]   )
+            model = create_model_tf2(  int( self.loaded_teams_xml [to_slot[0]] [to_slot[1]][3] )  )
+            print('skills created player ' , self.loaded_teams_xml [to_slot[0]] [to_slot[1]][3]    )
             # ulozeni dle hracova ID, date stampt ktery zaruci ze model se neulozi duplikovany                                                                    # nebude konstanta
             model.save( get_path_home_folder() + self.loaded_teams_xml [to_slot[0]] [to_slot[1]] [1]  + ".h5")
 
@@ -795,26 +803,29 @@ class class_coach ():
 
     # ulozi team do xml
     def save_team_from_teammngmt_table(self):
-        all_players_check = 1 # kontrola hrac x5 v teamu jinak se team neulozi
         team_index = self.selected_slot_team_management[0]
-        player_index = self.selected_slot_team_management[1]
+        player_index = self.selected_slot_team_management[1] # index 0 je team pak 5x hrac
         checked_team = self.loaded_teams_xml[team_index]
+        errorCode = ErrorCodes.OK.value
 
-        if checked_team != SavingType.empty_team_slot.value: #pokud prazdny slot metoda nic nevykona
-            for check_team_loop in range (1,5):
-                if len(checked_team [check_team_loop] ) == SavingType.empty_player_slot.value:                                       # 4 = len(none)   opakovani kodu zlepsit
-                    all_players_check = 0
+        #pokud prazdny slot metoda nic nevykona ,#oznacen je team ne hrac
+        if checked_team == SavingType.empty_team_slot.value or player_index != 0:
+            errorCode = ErrorCodes.cantSaveTeam.value
+            return errorCode
 
-            if all_players_check == 1 and player_index == 0: #oznacen je team ne hrac
-                # potvrdi ulozeni teamu
-                self.loaded_teams_xml[team_index][0][1] = "original"
-                create_xml_file(  checked_team)
+        for check_team_loop in range (1,5):
+            if checked_team [check_team_loop] == SavingType.empty_player_slot.value:                                       # 4 = len(none)   opakovani kodu zlepsit
+                errorCode = ErrorCodes.cantSaveTeam.value
+                return errorCode
 
-                #nastaveni pro novy team a naceni
-                self.training_areas_players = []  #reset
-                self.load_trening_areas()
+        # potvrdi ulozeni teamu
+        self.loaded_teams_xml[team_index][0][1] = "original"
+        create_xml_file(  checked_team)
+        #nastaveni pro novy team a naceni
+        self.training_areas_players = []  #reset
+        self.load_trening_areas()
 
-
+        return errorCode
 
 
     # vypocita slot z team management tabulky z souradnic mysi
@@ -858,6 +869,65 @@ class class_coach ():
                 self.loaded_teams_xml[team][0][2] = "selected"
             else:
                 self.loaded_teams_xml[team][0][2] = "notselected"
+
+
+    #NEPOUZIVASE
+    def define_NN_data_for_player(self,The_field,list_of_ingamers):
+        The_ball = list_of_ingamers[0]
+
+
+                            ##                                                                    ##
+                                ##                                                            ##
+                # # # # # #         ##      potreba elegantnejsi a rychlejsi reseni       ##          # # # # # # # #
+                                ##                                                            ##
+                            ##                                                                    ##
+
+
+        '''                                                                         #!!!! 2x v player +1 v kodu opravit!!!!   classes 165 radky
+        Inputs:
+              Hrac
+            xhrace[0] - angle to own goal   /kam se diva/
+            yhrace[1] - angle to ball
+            xmice[2] - distance to ball
+            ymice[3] - player type (GK,striker,defender,etc)
+                self.path_target[4] - qvadrant (zatim zakladni 3 & 3) 9 moznosti 12.12 prvni v prostred v nem prvni v prostred
+            [4] - MISTOKVADRANTU ROVNOU SOURADNICE x - y  napr 5   x=20 - y =15    deleno1000 aby byly menci cisla
+             Team
+            [5] - je z teamu nejblize mici   1 je 0 neni
+            [6] - tactic
+            [7] - strategy
+            [8] - message
+            [9] - team je u balonu ball
+            [10] - je v view nejaky hrac ?nastav vzdalenost?
+             Hra
+            [11] - game status
+            [12] - game type
+        Outputs:
+             - otoc +22 stupnu  (kod 0)
+             - otoc -22 stupnu  (kod 1)
+             - krok             (kod 2)
+             - kop do mice      (kod 3)
+             - bez akce         (kod 4)
+
+        '''
+        inputs = [self.rect.center[0]/1000, \
+            self.rect.center[1]/100, \
+            The_ball.rect.center[0]/1000, \
+            The_ball.rect.center[1]/100, \
+            self.path_target/100 ]
+
+        for inputs_loop in range (0,len(inputs)):
+            if self.skills_set[inputs_loop] == False:
+                inputs[inputs_loop] = 0
+
+        return inputs
+
+
+
+
+
+
+
 
 
 
@@ -1088,10 +1158,10 @@ class reff ():
         return self.selected_b
 
 
-    def start_match (self,The_field,called_at_begining,teams_threds):                           # potreba?called_at_begining ?
+    def start_match (self,The_field,called_at_begining):                           # potreba?called_at_begining ?
         #print ("startmatch",self.game_type )
-        thread_team_A = teams_threds[0]
-        thread_team_B = teams_threds[1]
+        thread_team_A = self.coach_team_A.arethreads_on[0]
+        thread_team_B = self.coach_team_A.arethreads_on[1]
         ball_index = 0
 
         # nelze spustit vice her
@@ -1189,14 +1259,15 @@ class reff ():
                 team_switch = 1
                 shift_x = The_field.field_bl_corner[0] + The_field.field_width*0.8
 
-        #if thread_team_A:#testy
-        if False:#testy
-            print ("   start treads       ")
+
+        if thread_team_A:
             thread_A_team =  Thread (target = self.coach_team_A.move_around_team   ,args =  (The_field,self.list_of_ingamers))
             thread_A_team.start()
-        if False:
+
+        if thread_team_B:
             thread_B_team =  Thread (target = self.coach_team_B.move_around_team   ,args =  (The_field,self.list_of_ingamers))
             thread_B_team.start()
+
         if False:#a player
             thread_A_team_player6 =  Thread (target = self.list_of_ingamers[6].move_round   ,args =  (The_field,self.list_of_ingamers))
             thread_A_team_player6.start()

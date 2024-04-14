@@ -114,7 +114,64 @@ def player_type_text(No_type):
 
     return type
 
+
+
+class ErrorCodes(Enum):
+    OK = 0
+    welcome = 0
+    coach = 1
+    teammanagement = 2
+    cantSaveTeam =25
+    stats = 3
+    statsdetail = 31
+    trening = 4
+    intrening = 41
+    treningmanual = 42
+    trainingoffscreen = 43
+    trainingautomated = 44
+    trainingautomatedstarted = 45
+    trainingautomateddone = 46
+    #reffingame = 5   pouzito???
+    matchlenght = 6
+    teamsconfirmation =7
+    ingame = 71
+    fieldsettings = 8
+    backtogame = 9
+    settings = 10
+    language = 11    #neuzito
+    windowandgrafic = 12
+    settingstraining = 13
+    #lab = 13
+    labmodswitcher = 14
+    help = 15
+    error = 404
+
+def get_errormessage_by_errorcode(errorcode):
+
+    if errorcode == ErrorCodes.cantSaveTeam.value:
+        return "cant save team "
+
+
+    return "error"
+
+
+
+
+
+
+
 #-----------------------------------------FUNKCE--------------------------------------------------------------
+
+def is_number_in_array(number,array):
+    is_in_array = False
+    for loop in range (0,len(array)):
+        if number == array[loop]:
+            is_in_array = True
+
+    return is_in_array
+
+
+
 
 
 '''

@@ -427,7 +427,7 @@ def f_print_treningman_buttons(The_game_window,lower_screen_ID):
 
 # print zobraz  menu button
 def f_print_dysplay_menu_button(The_game_window):
-    index = len(The_game_window.buttons )- 1 
+    index = len(The_game_window.buttons )- 1
     draw_button_No(The_game_window,index)
 
 # print edit hrace
@@ -557,9 +557,10 @@ def f_print_player_details_off_game(screen_ID,The_reff,The_game_window):
 
             for data_index in range (1,8):
                 if data_index != 5:
-                    data = CREATENO_FONT.render(  list_of_tags[data_index] + player[data_index], 1, GREY)
-                    The_game_window.surface.blit(data,( shift_horisontal, shift_vertikal ))
-                    shift_vertikal = shift_vertikal + The_game_window.menu_line_spacing
+                    if type(player[data_index]) is str:
+                        data = CREATENO_FONT.render(  list_of_tags[data_index] + player[data_index], 1, GREY)
+                        The_game_window.surface.blit(data,( shift_horisontal, shift_vertikal ))
+                        shift_vertikal = shift_vertikal + The_game_window.menu_line_spacing
 
             # tisk skils set
             f_print_createPlr_details(The_game_window,player[5],True)
@@ -681,7 +682,7 @@ def draw_teams_selection_error(The_game_window):
 # error  screen
 def draw_error(The_game_window):
     if The_game_window.language == "CZ":
-        error = WELCOME_FONT.render('Ooo error, neco je spatne ', 1, GREY)
+        error = WELCOME_FONT.render('Ooo , kde sou hraci? zkontroluj trenery', 1, GREY)
     else:
         error = WELCOME_FONT.render('Ooo error, something is wrong', 1, GREY)
 
@@ -752,15 +753,20 @@ def draw_menu_icon(The_game_window):
 '''
 
 
-def print_check_pin(The_game_window):
-    helpText="none"
+def print_check_pin(The_game_window,errorCode):
+    if errorCode == ErrorCodes.OK.value:
+        return
+    errorText=get_errormessage_by_errorcode(errorCode)
+
     if The_game_window.language == "CZ":
-        check_pin_text = MENU_FONT.render('check_pin , info_message', 1, GREY)
+        check_pin_text = MENU_FONT.render(errorText, 1, RED)
     else:
-        check_pin_text = MENU_FONT.render('check_pin', 1, GREY)
+        check_pin_text = MENU_FONT.render(errorText, 1, RED)
 
+    header_pin_text = MENU_FONT.render('Ajajaj :(', 1, GREY)
+
+    The_game_window.surface.blit(header_pin_text,( The_game_window.game_menu_x_start , 20 * The_game_window.menu_line_spacing ))
     The_game_window.surface.blit(check_pin_text,( The_game_window.game_menu_x_start , 21 * The_game_window.menu_line_spacing ))
-
 
 def draw_settings_windowAndGrafic(The_game_window):
     shift_from_menu = The_game_window.mngmt_shift_from_menu
@@ -793,12 +799,14 @@ def draw_settings_trening(The_game_window,The_reff):
     secreen_details = texts[1]
 
     The_game_window.surface.blit(screen_headeing, (table_left,  0.1 * The_game_window.menu_line_spacing))
-    The_game_window.surface.blit(secreen_details[0], (table_left, 4 * The_game_window.menu_line_spacing))
-    The_game_window.surface.blit(secreen_details[1], (table_left , 7 * The_game_window.menu_line_spacing))
-    The_game_window.surface.blit(secreen_details[2], (table_left , 10 * The_game_window.menu_line_spacing ))
+
+    for loop_print in range (0,len( secreen_details)):
+        shift_y = 3 * loop_print + 4
+        The_game_window.surface.blit(secreen_details[loop_print], (table_left, shift_y * The_game_window.menu_line_spacing))
 
     for loop in range (16,len(The_game_window.buttons)):
-        if trunc(The_game_window.buttons[loop].number) == Screens.settingstraining.value:
+        if trunc(The_game_window.buttons[loop].number) == Screens.settingstraining.value:                                                           #?? neni i v hlavnim neu??
+
             draw_button_No(The_game_window, loop)
 
 #
@@ -855,17 +863,19 @@ def windowAndGrafic_text_heading (language):
     return  screen_headeing
 
 def settingstrening_text_heading (language):
-    screen_headeing = ['x',['x','x','x']]
+    screen_headeing = ['x',['x','x','x','x']]
     if language == "CZ":
         screen_headeing[0] = MENU_FONT_HEADING.render('settingstrening_text_heading  cz', 1, GREY)
         screen_headeing[1][0] = MENU_FONT.render('manualni', 1, GREY)
         screen_headeing[1][1] = MENU_FONT.render('automayicke', 1, GREY)
         screen_headeing[1][2] = MENU_FONT.render('reinforsment', 1, GREY)
+        screen_headeing[1][3] = MENU_FONT.render('Trenovany x Souper', 1, GREY)
     else:
         screen_headeing[0] = MENU_FONT_HEADING.render('settingstrening_text_heading  en', 1, GREY)
         screen_headeing[1][0] = MENU_FONT.render('1 0  en', 1, GREY)
         screen_headeing[1][1] = MENU_FONT.render('1 1  en', 1, GREY)
         screen_headeing[1][2] = MENU_FONT.render('1 2   en', 1, GREY)
+        screen_headeing[1][3] = MENU_FONT.render('Trenovany vs Souper', 1, GREY)
 
     return  screen_headeing
 

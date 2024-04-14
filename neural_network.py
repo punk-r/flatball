@@ -75,7 +75,7 @@ def load_datalabels(file_name):
 
 
 def create_model_tf2(input_shape):
-    input_array_size = 5 #13
+    input_array_size = input_shape #13
     model = tf.keras.Sequential([
         tf.keras.layers.Flatten(input_shape=(1,input_array_size)),
         tf.keras.layers.Dense(5,activation="relu"),
@@ -86,7 +86,7 @@ def create_model_tf2(input_shape):
 
 
 def create_model_tf2_v2(input_shape):
-    input_array_size = 5 #13
+    input_array_size = input_shape #13
     model = tf.keras.Sequential([
         tf.keras.layers.Flatten(input_shape=(1,input_array_size)),
         tf.keras.layers.Dense(5,activation="softmax"),
@@ -95,6 +95,9 @@ def create_model_tf2_v2(input_shape):
     model.compile(optimizer="adam",loss='sparse_categorical_crossentropy',metrics=["accuracy"])
     return model
 
+
+
+#pouzito??
 def train_model_tensorflowboard_mdl_1(train_data,train_labels,model_ID_h5):
     tf.compat.v1.enable_eager_execution()
     log_dir="logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -102,12 +105,14 @@ def train_model_tensorflowboard_mdl_1(train_data,train_labels,model_ID_h5):
     hparams_callback = hp.KerasCallback(log_dir, {'num_relu_units': 512,'dropout': 0.2})
     #path = get_path_home_folder()
     #-model = load_model_from_5h(path +  model_ID_h5  + ".h5")
-    model = create_model_tf2(13)
+    model = create_model_tf2('eeeror')
     model.fit(train_data,train_labels,epochs=5,validation_data=(train_data, train_labels),callbacks=[tensorboard_callback, hparams_callback])
 
 
 #tensorboard dev upload --logdir ./logs --name "BP 12/7/22 v1" --description "fotbal test run "  --one_shot
 
+
+#pouzito??
 def train_model_tensorflowboard_mdl_2(train_data,train_labels,model_ID_h5):
     tf.compat.v1.enable_eager_execution()
     log_dir="logs/fit/" +"v2_" +datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -115,7 +120,7 @@ def train_model_tensorflowboard_mdl_2(train_data,train_labels,model_ID_h5):
     hparams_callback = hp.KerasCallback(log_dir, {'num_relu_units': 512,'dropout': 0.2})
     #path = get_path_home_folder()
     #-model = load_model_from_5h(path +  model_ID_h5  + ".h5")
-    model = create_model_tf2_v2(13)
+    model = create_model_tf2_v2('eeeror')
     model.fit(train_data,train_labels,epochs=5,validation_data=(train_data, train_labels),callbacks=[tensorboard_callback, hparams_callback])
 
 

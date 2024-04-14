@@ -24,7 +24,7 @@ position_clicked = [0,0]                # detail pro event od mysi
 game_inicialisation = False             # test pred spustenim hry
 #game_menu_active = True                # zobrazeni hlavniho menu
 game_menu_selcection = 'A'              # zkontroluj
-screen_ID_lower_screen = [0,0]          # welcome screen  list  screen_ID a lower_Screen
+screen_ID_lower_screen = [0,0,0]          # welcome screen  list  screen_ID a lower_Screen , errorcode
 screen_ID = 0
 lower_screen_ID = 0                     # cislo zobrazeni dolni casti okna
 selected_player = 'noplSelected'            # pro volani vykresleni lower menu
@@ -32,6 +32,7 @@ action_for_player = False               # zkontrolovat
 #team_management_buffer = "emptynow"     #
 screen_ID_buffer = 'noIDselected'           # kontrola prepnuti z zapocate hry                    ?pouzito
 ball_index = 0
+errorCode = 0
 
 #from pygame.locals import *                                                                                                                         # zkontrolovat import
 
@@ -180,7 +181,7 @@ while True:
                            The_reff.list_of_ingamers[no_of_ingamers].team_type == "H":
 
                            trained_player = The_reff.list_of_ingamers[no_of_ingamers]
-                           
+
                 coach =  The_reff.coach_team_A
                 if trained_player.player_type == PlayerType.GK.value :
                     coach.move_players_for_new_training_run_GK (The_field,The_reff.list_of_ingamers,'team')
@@ -238,6 +239,7 @@ while True:
                 screen_ID_lower_screen = f_menu_selected(button_ID,The_game_window,The_field,The_reff,screen_ID_lower_screen)   # zkontroluj kdyz ma screeen id je potreba podminka??
                 screen_ID = screen_ID_lower_screen[0]
                 lower_screen_ID = screen_ID_lower_screen[1]
+                errorCode = screen_ID_lower_screen[2]
 
                 # pri odchodu z hry nebo treningu maji hraci pause                                              # elegantneji udelat metodu pause pro reff
                 if (screen_ID_buffer == Screens.ingame.value or screen_ID_buffer == Screens.intrening.value) and trunc(button_ID) != Screens.ingame.value:
@@ -384,7 +386,7 @@ while True:
         The_game_window.surface.fill(BLACK,(0,0,The_game_window.game_menu_x_end,The_game_window.game_menu_y_end))
         draw_main_menu(The_game_window)
         draw_menu_lines_ID_3(The_game_window,screen_ID)
-        print_check_pin(The_game_window)
+        print_check_pin(The_game_window, errorCode)
     else:
         if screen_ID != Screens.help.value:
             draw_menu_lines_ID_4(The_game_window)    # napoveda je jen jedno okno

@@ -123,7 +123,7 @@ def f_print_refff_details(The_game_window,The_field,reff):
 
     for data_index in range (0,len(list_of_data)):
         data = MENU_FONT.render(  list_of_tags[data_index] + list_of_data[data_index]   , 1, GREY)
-        The_game_window.surface.blit(data,(The_field.field_bl_corner [0], The_field.field_bl_corner[1] + The_game_window.menu_line_spacing + shift_vertikal ))
+        The_game_window.surface.blit(data,(The_field.field_bl_corner [0] + 100, The_field.field_bl_corner[1] + The_game_window.menu_line_spacing + shift_vertikal ))
         shift_vertikal = shift_vertikal + The_game_window.menu_line_spacing
 
 
@@ -147,6 +147,9 @@ class TrainingEnvironment (Env):
         self.list_of_ingamers=None
         self.trained_player=None
         self.do_render = False
+        self.button_size = [100,26]
+        self.button_color = RED
+        self.training_progress_text ='   STOP  '
 
 
     def load_data (self, list_of_ingamers, trained_player, The_field,The_game_window,The_reff, render):
@@ -230,10 +233,12 @@ class TrainingEnvironment (Env):
 
             isGoal = self.The_reff.goal_check(The_field ,the_ball  )
             if (isGoal == True   ):
+                #print('gol')
                 if original_score < self.The_reff.score[0]:
-                    reward = 1000
+                    reward = 20
                 else:
-                    reward = -1000
+                    #print('gssol')
+                    reward = -20
 
                 done = True
 
@@ -241,7 +246,7 @@ class TrainingEnvironment (Env):
             if self.trained_player.player_type == PlayerType.GK.value :
                 #odejde od brany
                 if trained_player.rect.center[0] >  The_field.field_bl_corner[0] + 100:
-                    reward = -10
+                    reward = -5
                 else:
                     reward = 5
 
@@ -260,8 +265,18 @@ class TrainingEnvironment (Env):
     def render(self):
         for event in pygame.event.get():
             if event.type == KEYDOWN or event.type == MOUSEBUTTONDOWN :
+                position_clicked = pygame.mouse.get_pos()
+                print ('position_clicked' , position_clicked    )
+                print ('position_clicked' , position_clicked    )
+                if position_clicked[0] <    self.button_size[0] and position_clicked[1] >   self.The_game_window.window_height - self.button_size[1] :
+                    self.The_reff.coach_team_A.exit_RE_trening  = True
+                    self.button_color = GREEN
+                    self.training_progress_text = 'packiging... '
+
                 pass#self.episode_ended = True
         #-print(  "-------------------------------------render  ")
+
+
         self.The_game_window.surface.fill(BLACK)
 
         self.list_of_ingamers[0].moving(self.The_field,self.The_reff)                                             # zastavi se pri paused game????
@@ -274,6 +289,12 @@ class TrainingEnvironment (Env):
         f_print_RE_trening_repetition_sequence(self.The_game_window, self.The_reff.coach_team_A.trening_repetition_sequence)
         f_print_ball_details(self.The_game_window, self.The_field, self.list_of_ingamers[0], self.list_of_ingamers)
         f_print_refff_details(self.The_game_window, self.The_field,self.The_reff)
+
+        rectangle_details = [0  ,self.The_game_window.window_height - self.button_size[1] , self.button_size[0],self.button_size[1] ]
+        button_background = pygame.draw.rect(self.The_game_window.surface, self.button_color, rectangle_details, 0, 5)
+        #self.The_game_window.surface.fill(self.button_color,( 0  ,self.The_game_window.window_height - self.button_size[1] , self.button_size[0],self.button_size[1]))
+        self.The_game_window.surface.blit(MENU_FONT.render(self.training_progress_text, 1, BLACK),(   5,  self.The_game_window.window_height - self.button_size[1] ))
+
         pygame.display.flip()
 
     def reset(self):                                                                           #jak gol reff resetovat hru movehrace pro novy game

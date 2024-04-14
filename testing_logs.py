@@ -2,6 +2,9 @@
 import support_functions
 from support_functions import *
 
+import neural_network
+from neural_network import *
+
 
 def player_trening_info_log(player,action,run_to_save):
     print("cooridnates ",player.rect.center," path_target " ,player.path_target ," action ",action ," run_to_save " ,run_to_save)
@@ -18,6 +21,31 @@ def print_all_buttons(buttons):
         print ("number ", buttons[loop].number,"        name ", buttons[loop].name)
 
 
+
+def print_players_summary(loaded_teams_xml ):
+    for loop in range (0,4):
+        for loop2 in range (1,6):
+            path = get_path_home_folder()
+            id = loaded_teams_xml [loop][loop2][1]
+            model = load_model_from_5h(path +  id  + ".h5")
+            print (  'id'   ,id   ,  'skilss'    ,  loaded_teams_xml [loop][loop2][3]     )
+            print (  'mmmmodel'   ,model.summary())
+
+
+
+
+
+
+def print_all_indexes_from_menu_TESTING(list_in, repeat_level):
+    for loop in range (0,len(list_in)):
+        if ( (type(list_in[loop]) is list )   and repeat_level < 1) :
+            print ("level " , repeat_level   , "index ", loop)
+            print_all_indexes_from_menu_TESTING(list_in[loop], repeat_level + 1)
+        else:
+            print ("level " , repeat_level   , "index ", loop)
+            print ( list_in[loop])
+
+    print (" ----------------x--------------   ")
 
 
 

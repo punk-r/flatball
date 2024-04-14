@@ -16,7 +16,7 @@ def create_new_default_player(ID,position):
     player = [players_names (randint( 0,96 )), ID, position, "13", "0", create_new_skills_set(13), "0","0"]
     return player
 
-def create_new_random_player(training_set,level,):
+def create_new_random_player_data(training_set,level):
     player = [players_names (randint( 0,94 )), time.strftime("%d%m%H%M%S"), "1",  level, \
                     "0", training_set, "0", "0"]
     return player
@@ -71,7 +71,7 @@ def create_xml_file(team_data):
         root2.append(player_type)
         player_type.text= team_data[loop][2]
         root2.append(skills_level)
-        skills_level.text= team_data[loop][3]
+        skills_level.text= str(team_data[loop][3])
         root2.append(trening_time)
         trening_time.text= team_data[loop][4]
         root2.append(skills_set)

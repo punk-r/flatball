@@ -39,7 +39,7 @@ class player (ingamer):
     acuracy = 0                              # osobnost hrace, urcuje presnost kopu            -----ZATIM nepouzito-------
     skills_level = 0                         # osobnost hrace, urcuje kolik vstupu hrac rozpozna pri treningu
     skills_set = []                           #skill set hrace pri vytoreni
-    player_type = "99999"                    # utocnik, obrance, brankar, midfielder
+    player_type = "notSpecified"                    # utocnik, obrance, brankar, midfielder
     position_by_strategy = "notSpecified"    # -----ZATIM nepouzito-------
     strategy = 0                             # -----ZATIM nepouzito-------
     tactic= 0                                # -----ZATIM nepouzito-------
@@ -56,6 +56,7 @@ class player (ingamer):
     trening_type_player = 0
     model_needs_reload = False
     path_folders = 'none'
+    NN_functions_set_defined = []
 
 
     # ulozi jmeno trenera pro team
@@ -76,6 +77,7 @@ class player (ingamer):
 
     def get_NN_data(self,The_field,list_of_ingamers):
         The_ball = list_of_ingamers[0]
+        
 
 
                             ##                                                                    ##
@@ -116,9 +118,15 @@ class player (ingamer):
             self.rect.center[1]/100, \
             The_ball.rect.center[0]/1000, \
             The_ball.rect.center[1]/100, \
-            self.path_target/100 ]
+            self.path_target/100, \
+            0,0,0,0,0,0,0,0 ]
 
-        return inputs
+        inputs_set_defined = self.skills_level * [0]
+        for saving_loop in range (0,len(self.skills_set)):
+            if self.skills_set[saving_loop] == True:
+                inputs_set_defined.append(inputs[saving_loop])
+
+        return inputs_set_defined
         '''
         #musi byt nulty index list v liste podminka pro keras vstup!
         inputs = [round(self.path_target/1000,2), \
@@ -164,10 +172,11 @@ class player (ingamer):
         selection_coding = self.skills_set
 
         inputs = self.get_NN_data(The_field,list_of_ingamers)
-
+        '''
         for inputs_loop in range (0,len(inputs)):
             if selection_coding[inputs_loop] == False:
                 inputs[inputs_loop] = 0
+        '''
 
 
         if self.reinforsment == False:                                                  #??????ZKONTROLUJ ????????????????

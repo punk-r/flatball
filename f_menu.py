@@ -129,6 +129,7 @@ def create_buttons_instances(The_game_window,The_field):
     settingstrening_counter_x = 0
     settingstrening_counter_y = 0
     shift_mngmntcreateNo_buttons = int (The_game_window.mngmt_column_width*2)
+    counter_settings =1
 
     # generovani tlacitek
     for generating_buttons_loop in range (0,len(buttons_names_list)):
@@ -185,6 +186,8 @@ def create_buttons_instances(The_game_window,The_field):
         #  team managementcreate player tlacitka
         elif trunc(buttons_ids[generating_buttons_loop]) ==  Screens.teammanagementcreate.value:
             new_button.size = [mngmnt_button_width ,mngmnt_button_height]
+            if new_button.number == 23.1:
+                new_button.size[1] = 2 * mngmnt_button_height
             new_button.x_corner = The_game_window.game_menu_x_end + The_game_window.mngmt_shift_from_menu +  \
                                      mngmntcreate_buttons_counter  * new_button.size[0]
             new_button.y_corner = 25 *  The_game_window.menu_line_spacing #The_game_window.game_menu_y_end #+ The_game_window.heading_shift *2
@@ -285,16 +288,16 @@ def create_buttons_instances(The_game_window,The_field):
             new_button.y_corner =  The_game_window.heading_shift + (1 + settingstrening_counter_y) * \
                                      The_game_window.mngmt_text_ratio *  The_game_window.menu_line_spacing
 
+            if  is_number_in_array(counter_settings, [ 2 ,4 ,8               ]):
+                settingstrening_counter_x = 0
 
-            if settingstrening_counter_x == 1:
-                if settingstrening_counter_y  < 2:
-                    settingstrening_counter_x = 0
-                    settingstrening_counter_y = settingstrening_counter_y + 1
-                else:
-                    settingstrening_counter_x = settingstrening_counter_x + 1
-            else:
+            if  is_number_in_array(counter_settings, [2 ,4 ,8          ]):
+                settingstrening_counter_y = settingstrening_counter_y + 1
+
+            if  is_number_in_array(counter_settings, [1  ,3,5,6,7 ,9      ]):
                 settingstrening_counter_x = settingstrening_counter_x + 1
 
+            counter_settings = counter_settings + 1
 
 
 
@@ -400,6 +403,7 @@ def f_menu_selected(position_clicked,The_game_window,The_field,The_reff,screen_I
     screen = screen_ID_lower_screen[0]
     lower_screen = screen_ID_lower_screen[1]
     button_selected = position_clicked
+    errorCode = ErrorCodes.OK.value
 
     for index_button_loop in range (0,len(The_game_window.buttons)):
         if The_game_window.buttons[index_button_loop].number == button_selected:
@@ -449,7 +453,9 @@ def f_menu_selected(position_clicked,The_game_window,The_field,The_reff,screen_I
         elif  button_selected == 0.20: #testy
             #print ('self.loaded_teams_xml',The_reff.coach_team_A.loaded_teams_xml)
             #The_reff.coach_team_A.load_trening_areas()
-            print ('self.training_areas_playersself',The_reff.coach_team_A.training_areas_players)
+            #print ('self.training_areas_playersself',The_reff.coach_team_A.training_areas_players)
+            print('TESTY ' , print_all_indexes_from_menu_TESTING (The_reff.coach_team_A.loaded_teams_xml , 0)  )
+            #print_players_summary(The_reff.coach_team_A.loaded_teams_xml )
             #x = str(0104210108)
             #print('aaa',The_reff.coach_team_A.get_trening_areas_for_player(x))
 
@@ -543,7 +549,7 @@ def f_menu_selected(position_clicked,The_game_window,The_field,The_reff,screen_I
         if  button_selected == 2.60 :
             The_reff.coach_team_A.choose_team_from_selection()
         if  button_selected == 2.70 :
-            The_reff.coach_team_A.save_team_from_teammngmt_table()
+            errorCode = The_reff.coach_team_A.save_team_from_teammngmt_table()
 
     ## tlacitka  team managementedit
     if  trunc(button_selected) == Screens.teammanagementedit.value  and screen == Screens.teammanagement.value \
@@ -567,8 +573,8 @@ def f_menu_selected(position_clicked,The_game_window,The_field,The_reff,screen_I
         if  button_selected == 23.10 :
             The_reff.coach_team_A.create_new_player() #vytv hrace
         if  button_selected == 23.20 :
-            The_reff.coach_team_A.create_new_player()
-
+            #The_reff.coach_team_A.create_new_player()
+            pass
     ## tlacitka  team managementcreateNo
     if  trunc(button_selected) == Screens.teammanagementcreateNo.value  and screen == Screens.teammanagement.value \
         and lower_screen == Screens.teammanagementcreate.value :
@@ -599,25 +605,38 @@ def f_menu_selected(position_clicked,The_game_window,The_field,The_reff,screen_I
 
     ## tlacitka  settingstraining
     if  trunc(button_selected) == Screens.settingstraining.value:
-        if  button_selected == 13.10 :
+        if  button_selected == 13.01 :
             print("13.10"  ,"settingstraining"   ,"settingstraining"  )
             The_field.coach_team_A.set_trening_number_of_runs(self,'trening_sesion_total_runs',1000)
-        if  button_selected == 13.20 :
+        if  button_selected == 13.02 :
             The_field.coach_team_A.set_trening_number_of_runs(self,'trening_sesion_total_runs',5000)
-        if  button_selected == 13.30 :
+        if  button_selected == 13.03 :
             #The_field.coach_team_A.set_trening_number_of_runs(self,run_type,value)
             pass
-        if  button_selected == 13.40 :
+        if  button_selected == 13.04 :
             #The_field.coach_team_A.set_trening_number_of_runs(self,run_type,value)
             pass
-        if  button_selected == 13.50 :
+        if  button_selected == 13.05 :
             The_field.coach_team_A.set_trening_number_of_runs(self,'RE_trening_sesion_runs',1000)
-        if  button_selected == 13.60 :
+        if  button_selected == 13.06 :
             The_field.coach_team_A.set_trening_number_of_runs(self,'RE_trening_sesion_runs',5000)
-        if  button_selected == 13.70 :
+        if  button_selected == 13.07 :
             The_field.coach_team_A.set_trening_number_of_runs(self,'trening_repetition_total',2)
-        if  button_selected == 13.80 :
+        if  button_selected == 13.08 :
             The_field.coach_team_A.set_trening_number_of_runs(self,'trening_repetition_total',4)
+        if  button_selected == 13.09 or button_selected == 13.10:
+
+            if button_selected == 13.09:
+                The_reff.coach_team_A.arethreads_on[0] = not The_reff.coach_team_A.arethreads_on[0]
+            else:
+                The_reff.coach_team_A.arethreads_on[1] = not The_reff.coach_team_A.arethreads_on[1]
+
+            The_game_window.buttons[index_button_loop].selected = not The_game_window.buttons[index_button_loop].selected
+            if The_game_window.buttons[index_button_loop].selected == True:
+                The_game_window.buttons[index_button_loop].name = 'AI'
+            else:
+                The_game_window.buttons[index_button_loop].name = 'H'
+
 
 
 
@@ -634,9 +653,9 @@ def f_menu_selected(position_clicked,The_game_window,The_field,The_reff,screen_I
         if  button_selected == 7.40 :
             #hra lze zacit pouze s 2 teamy
             if  The_reff.count_selected_teams() == 2:
-                teams_threds = [True, True]
+                #teams_threds = [True, True]
                 called_at_begining = True
-                The_reff.start_match (The_field, called_at_begining, teams_threds)
+                The_reff.start_match (The_field, called_at_begining)# teams_threds)
                 The_game_window.menu_on_screen = False
                 screen = Screens.ingame.value
         if  button_selected == 7.50 :#reset  pro reff ze muze zacit nova hra
@@ -677,13 +696,13 @@ def f_menu_selected(position_clicked,The_game_window,The_field,The_reff,screen_I
             # vyhodnoceni
             if start_training_check[0] == True:
                 # prvni team je trenovany
-                teams_threds = [False,False]
+                #teams_threds = [False,False]
                 called_at_begining = True
                 RE_started = False
                 The_game_window.menu_on_screen = False
                 screen = Screens.intrening.value
 
-                The_reff.start_match (The_field, called_at_begining, teams_threds)
+                The_reff.start_match (The_field, called_at_begining)  #, teams_threds)
                 The_reff.set_game_status_to_players()
 
                 for ingamers_loop in range (1,len(The_reff.list_of_ingamers)):
@@ -726,7 +745,11 @@ def f_menu_selected(position_clicked,The_game_window,The_field,The_reff,screen_I
                         trained_player.model= load_model( full_path +  trained_player_ID + ".h5")
                         model = trained_player.model
 
+                        if coach.exit_RE_trening  == True:
+                            break
+
                     # reset screenu po treningu
+                    coach.exit_RE_trening = False
                     screen = Screens.trening.value
                     The_game_window.menu_on_screen = True
                     lower_screen = Screens.trainingautomateddone.value
@@ -738,7 +761,7 @@ def f_menu_selected(position_clicked,The_game_window,The_field,The_reff,screen_I
                     # normal training
                     The_reff.list_of_ingamers[ingamers_loop].reinforsment = False
                     The_reff.list_of_ingamers[ingamers_loop].set_selected(True)
-                    teams_threds = [False,False]
+                    #teams_threds = [False,False]
                     called_at_begining = True
                     #The_reff.start_match(The_field, called_at_begining, teams_threds)                                           #JAKOT ZE TAM SOU DVA STARTMATCH
 
@@ -773,7 +796,7 @@ def f_menu_selected(position_clicked,The_game_window,The_field,The_reff,screen_I
                 screen = Screens.welcome.value
 
     # vraci novou obrazovku dle menu nebo tlacitek                                                                                       # spustit hru
-    return [screen,lower_screen]
+    return [screen,lower_screen,errorCode]
 
 
 #-----------------------------------------------------------TEXTY--------------------------------------------------------
@@ -792,7 +815,7 @@ def all_buttons_names(app_language):
         confirm_teams_for_game = ["H/AI" , "AI/H", "AI/AI","zacithru", "ukoncit rozehranou hru"]
         reff_at_game_buttons = ["pause", "unpause"," grid "," 3 "," 4 "]
         windowAndGrafic = ["on/off "," 200x450 ","450x780 "]
-        settingstrening = [" 1000 ","  5000","  4","  4","  500","  500"," 3 "," 41 "]
+        settingstrening = [" 1000 ","  5000","  4","  4","  500","  500"," 3 "," 41 ", "  H", "H"]
         back_to_menu = ["MENU "]
 
     else:
@@ -808,7 +831,7 @@ def all_buttons_names(app_language):
         confirm_teams_for_game = ["H/AI" , "AI/H", "AI/AI","start game", "cancel started game"]
         reff_at_game_buttons = ["pause", "unpause"," grid "," 3 "," 4 "]
         windowAndGrafic = ["on/off "," 200x450 ","450x780 "]
-        settingstrening = ["100 ","  500","  4","  4","  500","  500"," 3 "," 41 "]
+        settingstrening = ["100 ","  500","  4","  4","  500","  500"," 3 "," 41 ", "  H", "H"]
         back_to_menu = ["MENU "]
 
     # tlacitka krom menu
@@ -836,7 +859,7 @@ def all_buttons_IDs():
                     7.10, 7.20, 7.30, 7.40, 7.50, \
                     71.10, 71.20, 71.30, 71.40, 71.50, \
                     12.10, 12.20, 12.30, \
-                    13.10, 13.20, 13.30, 13.40, 13.50, 13.60, 13.70, 13.80, \
+                    13.01, 13.02, 13.03, 13.04, 13.05, 13.06, 13.07, 13.08, 13.09, 13.10, \
                     15.10 ]
 
     return buttons_ids
