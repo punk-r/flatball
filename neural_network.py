@@ -1,21 +1,27 @@
 from os.path import abspath
 from os import getcwd
 
+import tensorflow as tf
+
 from  tensorflow.keras import Sequential
 from  tensorflow.keras.layers import Dense
 from  tensorflow.keras.models import load_model
-
+import numpy as np
 from numpy import exp
 from numpy import max
+import copy
+
 
 import platform
 from platform import system
+import h5py                                                      #testyyyyyyyyy
+#------------- tensorflow board ------------------
 
-#------------------------------------------------------------------------------
+import datetime
+from tensorboard.plugins.hparams import api as hp
 
 def get_os():
     os = platform.system()
-    #Windows
     return os
 
 def get_path_home_folder():
@@ -44,48 +50,104 @@ def sigmoid(x):
         x = -500
     calculated =  1 / (1 + exp(-x))
     return calculated
-
-# ! exp a max jsou z numpy ne z math modulu !!
+                                                                                            # ! exp a max jsou z numpy ne z math modulu !!
 def softmax(x):
     e_x = exp(x - max(x))
     return e_x / e_x.sum()
-
 
 def load_data(file_name):
     data_list=[]
     file = open(file_name, 'r')
     for line in file:
-        line=line.replace("'", "")
-        data_list.append(  line.strip() )
+        data_list.append([[float(x) for x in line.split(",")]])
     file.close()
-    for loop in range (0,len(data_list)):
-        data_list[loop]= data_list[loop].replace("'", "")
+
     return data_list
 
-def create_model(shape):
-    # v xml je ulozen char,pretypovani na int
-    new_shape = int(shape)
-    print("shape",new_shape)
-    model = Sequential([
-        Dense(4, input_shape=(new_shape,)),
-        Dense(5,activation="relu"),
-        Dense(5,activation="softmax")
-        ])
+def load_datalabels(file_name):
+    data_list=[]
+    file = open(file_name, 'r')
+    for line in file:
+        data_list.append([int(x) for x in line.split(",")])
+    file.close()
 
+    return data_list
+
+
+def create_model_tf2(input_shape):
+    input_array_size = input_shape #13
+    model = tf.keras.Sequential([
+        tf.keras.layers.Flatten(input_shape=(1,input_array_size)),
+        tf.keras.layers.Dense(5,activation="relu"),
+        tf.keras.layers.Dense(5,activation="softmax")
+        ])
     model.compile(optimizer="adam",loss='sparse_categorical_crossentropy',metrics=["accuracy"])
     return model
+
+
+def create_model_tf2_v2(input_shape):
+    input_array_size = input_shape #13
+    model = tf.keras.Sequential([
+        tf.keras.layers.Flatten(input_shape=(1,input_array_size)),
+        tf.keras.layers.Dense(5,activation="softmax"),
+        tf.keras.layers.Dense(5,activation="softmax")
+        ])
+    model.compile(optimizer="adam",loss='sparse_categorical_crossentropy',metrics=["accuracy"])
+    return model
+
+
+
+#pouzito??
+def train_model_tensorflowboard_mdl_1(train_data,train_labels,model_ID_h5):
+    tf.compat.v1.enable_eager_execution()
+    log_dir="logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
+    hparams_callback = hp.KerasCallback(log_dir, {'num_relu_units': 512,'dropout': 0.2})
+    #path = get_path_home_folder()
+    #-model = load_model_from_5h(path +  model_ID_h5  + ".h5")
+    model = create_model_tf2('eeeror')
+    model.fit(train_data,train_labels,epochs=5,validation_data=(train_data, train_labels),callbacks=[tensorboard_callback, hparams_callback])
+
+
+#tensorboard dev upload --logdir ./logs --name "BP 12/7/22 v1" --description "fotbal test run "  --one_shot
+
+
+#pouzito??
+def train_model_tensorflowboard_mdl_2(train_data,train_labels,model_ID_h5):
+    tf.compat.v1.enable_eager_execution()
+    log_dir="logs/fit/" +"v2_" +datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
+    hparams_callback = hp.KerasCallback(log_dir, {'num_relu_units': 512,'dropout': 0.2})
+    #path = get_path_home_folder()
+    #-model = load_model_from_5h(path +  model_ID_h5  + ".h5")
+    model = create_model_tf2_v2('eeeror')
+    model.fit(train_data,train_labels,epochs=5,validation_data=(train_data, train_labels),callbacks=[tensorboard_callback, hparams_callback])
+
+
+
 
 ## !
 ##  TRAIN MDEL zkontrolovat code BO SE SPUSTI AZ PO KONTROLE slozek , tz model bude vzdy existovat !!!!!!!
 ## !
-def train_model(train_data,train_labels,test_data,test_labels,model_ID_h5):
+
+def train_model(train_data,train_labels,model_ID_h5):
     path = get_path_home_folder()
     model = load_model_from_5h(path +  model_ID_h5  + ".h5")
-    model.fit(train_data,train_labels,epochs=5)
-    model.save(path +  model_ID_h5  + ".h5")
+    #print("train_data" , train_data)
+    #print("train_labels" , train_labels)
 
+    try :
+        model.fit(train_data, train_labels)
+        model.save(path +  model_ID_h5  + ".h5")
+    except Exception as e:
+        #print("train_data" , train_data)
+        #print("train_labels" , train_labels)
+        print("man tr xxx NOT xx  ok"  )
+        print(e)
+    print("man tr done"  )
 
 def load_model_from_5h(new_model):
+    print("mmmodel",new_model )
     model = load_model(new_model)
     return model
 
@@ -95,33 +157,39 @@ def proces_reinforsment_data(player_ID, data_trening, data_labels):
     #print ("data_labels",data_labels )
     pass
 
-
-
-
-
-
-
-
-
+def load_model_from_5h_in_player_method(model_ID):
+    path = get_path_home_folder()
+    model = load_model_from_5h(path +  model_ID  + ".h5")
+    return model
 
 
 #---------------------  nasledujici funkce jsou pouze pro testy a kontrolu keras modelu  ----------------------------------------
 
+
+def test_test_model_view():
+    filename = "4.h5"
+
+    with h5py.File(filename, "r") as f:
+        # Print all root level object names (aka keys)
+        # these can be group or dataset names
+        print("Keys: %s" % f.keys())
+        # get first object name/key; may or may NOT be a group
+        a_group_key = list(f.keys())[0]
+
+        # get the object type for a_group_key: usually group or dataset
+        print(type(f[a_group_key]))
+
+        # If a_group_key is a group name,
+        # this gets the object names in the group and returns as a list
+        data = list(f[a_group_key])
+
+        # If a_group_key is a dataset name,
+        # this gets the dataset values and returns as a list
+        data = list(f[a_group_key])
+        # preferred methods to get dataset values:
+        ds_obj = f[a_group_key]      # returns as a h5py dataset object
+
+
+
+
 #--------------------------------------------------------------------------------
-'''
-if __name__ == "__main__":
-    a_data = [[187,309,318,2],[228,66,378,2],[253,295,454,2]]
-    b_data =[2,4,2]
-
-    modelname = "test01"
-
-    model = create_model(4)
-    print(get_path_apprun_folder())
-    print("a")                                                                                 # nebude konstanta
-    model.save( get_path_home_folder() + modelname + ".h5")
-    model.
-    print("b")
-    train_model(a_data,b_data,a_data,b_data,"test01")
-    print("c")
-    #
-'''
