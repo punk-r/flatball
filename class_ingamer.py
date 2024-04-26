@@ -1,4 +1,3 @@
-
 import pygame
 clock = pygame.time.Clock()
 import sys
@@ -22,14 +21,15 @@ class ingamer(pygame.sprite.Sprite):
     step = 2
     destination_move = [0,0]                                                                            #uzito?
     #lab_mode_b = 1
-    color = blue
+    color = BLUE
     collision_allowed_b = False
     selected_b = False
     team_type = "Neutral"          # H - human ,  AI , Neutral for ball and reff
     field_site = "neutral"         # L team ma vlastni branu na levo, R team ma vlastni branu na pravo
+    reinforsment = False
 
     '''
-    1.uhel pocitame od brany sveho teamu , kdyz hrac stoji v uhlu 180 ,znamena ze je 'zady' k brane
+    1.uhel pocitame od brany sveho teamu , kdyz hrac stoji v uhlu 180 ,znamena ze je 'zady' k sve brane
     2.hrac se muze nastavit pouze jednim smerem to znamena kdyz chci nastavit -20 supnu musim uzit 340   (360 -20)
     pokud je brana v pravo uhly se zrcadli aby platilo pravidlo 1
 
@@ -55,6 +55,57 @@ class ingamer(pygame.sprite.Sprite):
 
 
     '''
+
+
+    def is_move_to_ingamer(self, other_ingamer):
+        below = left = False
+        if self.rect.center[0] < other_ingamer.rect.center[0]:
+            left = True
+        if self.rect.center[1] > other_ingamer.rect.center[1]:
+            below = True
+
+        if self.velocity[0] and left == True:
+            return ffalse
+        if self.velocity[1] and below == True:
+            return ffalse
+
+        return ffalse
+
+
+
+
+    def is_move_over_field(self,The_field):
+        # hranice hriste
+        bottom = The_field.field_bl_corner[1]
+        top    = The_field.field_bl_corner[1] - The_field.field_height
+        right  = The_field.field_bl_corner[0] + The_field.field_width
+        left   = The_field.field_bl_corner[0]
+
+        #  detekce pohybu na hristi, cast hrace muze prejit pres linii hriste , pro pripad ze se balon zastavil prave na teto linii
+        if self.rect.center[0] + self.velocity[0] > left - self.radius/2  and self.rect.center[0] + self.velocity[0] < right + self.radius/2  and \
+            self.rect.center[1] + self.velocity[1] < bottom + self.radius/2  and self.rect.center[1] + self.velocity[1] > top - self.radius/2  :
+            return False
+
+        return True
+
+
+    def do_ingamer_colide(self,other_ingamer, tolerance):
+        distance = pythagoras_distance (other_ingamer.rect.center,  self.rect.center)
+
+        if distance < other_ingamer.radius + self.radius + tolerance:
+            return True
+
+        return False
+
+
+    def do_ingamer_after_step_colide(self,other_ingamer, tolerance):
+        distance = pythagoras_distance (other_ingamer.rect.center, [ self.rect.center[0] + self.velocity[0] ,  self.rect.center[1] + self.velocity[1] ] )
+
+        if distance < other_ingamer.radius + self.radius + tolerance:
+            return True
+
+        return False
+
 
     # vypocte uhel k druhemu objektu(nebo novy smer) , a to v zavislosti na field_site
     def calculate_angle_to_other_object(self,new_target):
@@ -189,37 +240,51 @@ class ingamer(pygame.sprite.Sprite):
         picture_test = pygame.image.load(graphic_name)
         self.image = pygame.transform.scale(picture_test, (40, 40))
 
+    def reset_graphic(self):
+        self.image = "notset"
+
     # vykresli objekt hry                                                                   # zkontroluj draw ingames and ball ??? zjednodusit
     def draw_ingamer (self,game_window):
         # kresli vision hrace - kam se diva
         # kresleno z velocity jelikoz to je uhel kam hrac smeruje
-
-        view = 12 # zobrazeni pohledu je 10 pixelu , velocity je |2| * 5 = 10
-        if self.velocity[0] <= 2 or self.velocity[0] <= 2:
-            vision_adjescent = view * self.velocity[0]
-            vision_opposite = view * self.velocity[1]
-        else:
-            vision_adjescent = int(view * self.velocity[0] * 0.8)
-            vision_opposite = int(view * self.velocity[1]  * 0.8)
+        # correction je bo step ma hrac nahodny a musi se ukazovat view stajne vsem
 
         if self.selected_b == True:
-            vision_color = red
+            vision_color = RED
         else:
-            vision_color = green
+            vision_color = GREEN
 
-        pygame.draw.lines(game_window.surface, vision_color, True, ((self.rect.center[0] ,self.rect.center[1] ), \
+        if self.reinforsment == True:
+            vision_color = BLUE
+
+        velocity_corected_x =    self.velocity[0]
+        velocity_corected_y =  self.velocity[1]
+
+        view = 10 # zobrazeni pohledu je 10 pixelu , velocity je |2| * 5 = 10
+        if abs(velocity_corected_x )<= 2 and  abs(velocity_corected_y) <= 2 :
+            vision_adjescent = view * velocity_corected_x
+            vision_opposite = view * velocity_corected_y
+        else:
+            vision_adjescent = int(view *  velocity_corected_x *0.8 )
+            vision_opposite = int(view *  velocity_corected_y  *0.8)
+
+        #if self.radius > 8:
+            #testy
+        if 1:
+            pygame.draw.lines(game_window.surface, vision_color, True, ((self.rect.center[0] ,self.rect.center[1] ), \
                                 (self.rect.center[0] + vision_adjescent ,self.rect.center[1] + vision_opposite  )), 1)
 
-
-        if self.image == "notset":
+        #if self.image == "notset":
+        if game_window.draw_circles_on_screen:
             if self.selected_b == True:
-                color = yellow_item_selected
+                color = YELLOW_SELECTED_ITEMS
             else:
                 color = self.color
-            pygame.draw.circle(game_window.surface, color, ( self.rect.center[0] ,self.rect.center[1]) ,self.radius, self.radius)
+            pygame.draw.circle(game_window.surface, color, ( self.rect.center[0] ,self.rect.center[1]) ,self.radius, 2)
 
         else:
             game_window.surface.blit(self.image, (int (self.rect.center[0] - 20      ) ,int(self.rect.center[1]   -20        )))
+            The_game_window.surface.blit(secreen_details[3], (table_left + 2 * column_width, 21.5 * The_game_window.menu_line_spacing))
 
 
     # nastaveni nove pozice
@@ -240,7 +305,7 @@ class ingamer(pygame.sprite.Sprite):
         x_limits = [  self.rect.center[0] - self.radius   ,  self.rect.center[0] + self.radius    ]
         y_limits = [  self.rect.center[1] - self.radius   ,  self.rect.center[1] + self.radius    ]
 
-        if f_is_clikced_on_circle(x_limits,y_limits,position_clicked) == True:
+        if is_clikced_on_circle(x_limits,y_limits,position_clicked) == True:
             return True
         else:
             return False
