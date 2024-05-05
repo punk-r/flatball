@@ -1,0 +1,877 @@
+%%%  Ukázkový text a dokumentace stylu pro text závěrečné (bakalářské a
+%%%  diplomové) práce na KI PřF UP v Olomouci
+%%%  Copyright (C) 2012 Martin Rotter, <rotter.martinos@gmail.com>
+%%%  Copyright (C) 2014 Jan Outrata, <jan.outrata@upol.cz>
+
+
+%%  Pro získání PDF souboru dokumentu je třeba tento zdrojový text v
+%%  LaTeXu přeložit (dvakrát) programem pdfLaTeX.
+
+%%  V případě použití programu BibLaTeX pro tvorbu seznamu literatury
+%%  je poté ještě třeba spustit program Biber s parametrem jméno
+%%  souboru zdrojového textu bez přípony a následně opět (dvakrát)
+%%  přeložit zdrojový text programem pdfLaTeX.
+
+%%  Postup získání Postscriptového souboru je popsán v dokumentaci.
+
+
+%%  Třída dokumentu implementující styl pro závěrečnou práci. Vybrané
+%%  nepovinné parametry (ostatní v dokumentaci):
+
+%%  'master' pro sazbu diplomové práce, jinak se sází bakalářská práce
+
+%%  'program=kód' pro Váš studijní program/obor (specializaci), kódy
+%%  pro diplomovou práci 'infoi' pro Informatiku (Obecná informatika),
+%%  'infui' pro Informatiku (Umělá inteligence), 'ainfpst' pro
+%%  Aplikovanou informatiku (Počítačové systémy a technologie), 'uinf'
+%%  pro Učitelství informatiky pro střední školy, 'binf' pro
+%%  Bioinformatiku, 'inf' pro Informatiku (bez specializací) a 'ainf'
+%%  pro Aplikovanou informatiku (bez specializací), jinak je výchozí
+%%  ainfvs pro Aplikovanou informatiku (Vývoj software), a pro
+%%  bakalářskou práci 'infoi' pro Informatiku (Obecná informatika),
+%%  'itp' pro Informační technologie v prezenční formě, 'itk' pro
+%%  Informační technologie v kombinované formě, 'infv' pro Informatiku
+%%  pro vzdělávání, 'binf' pro Bioinfomatiku, 'inf' pro Informatiku
+%%  (bez specializací), 'ainfp' pro Aplikovanou informatiku (bez
+%%  specializací) v prezenční formě, 'ainfk' pro Aplikovanou
+%%  informatiku (bez specializací) v kombinované formě, jinak je
+%%  výchozí infpvs pro Informatiku (Programování a vývoj software)
+
+%%  'printversion' pro sazbu verze pro tisk (nebarevné logo a odkazy,
+%%  odkazy s uvedením adresy za odkazem, ne odkazy do rejstříku),
+%%  jinak verze pro prohlížeč
+
+%%  'biblatex' pro zapnutí podpory pro sazbu bibliografie pomocí
+%%  BibLaTeXu, jinak je výchozí sazba v prostředí thebibliography
+
+%%  'language=jazyk' pro jazyk práce, jazyky english pro anglický,
+%%  slovak pro slovenský, jinak je výchozí czech pro český
+
+%%  'font=sans' pro bezpatkový font (Iwona Light), jinak je výchozí
+%%  serif pro patkový (Latin Modern)
+
+%%  'figures, tables, theorems a sourcecodes' pro sazbu seznamu
+%%  obrázků, tabulek, vět a zdrojových kódů, jinak při =false se
+%%  nesází (u theorems a sourcecodes výchozí)
+
+\documentclass[
+%  master,
+  program=ainfk,
+%  printversion,
+  biblatex,
+  language=czech,
+%  font=sans,
+  figures=true,
+  tables ,
+%  theorems,
+  sourcecodes=true,
+  glossaries=true,
+  index
+]{kidiplom}
+
+%% Informace pro úvodní strany. V jazyku práce (pokud není v komentáři
+%% uvedeno česky) a anglicky. Uveďte všechny, u kterých není v
+%% komentáři uvedeno, že jsou volitelné. Při neuvedení se použijí
+%% výchozí texty. Text pro jiný než nastavený jazyk práce (nepovinným
+%% parametrem language makra \documentclass, výchozí český) se zadává
+%% použitím makra s uvedením jazyka jako nepovinného parametru.
+
+%% Název práce, česky a anglicky. Měl by se vysázet na jeden řádek.
+\title{Počítačová hra – 2D fotbal}
+\title[english]{Computer Game – 2D Soccer}
+
+%% Volitelný podnázev práce, česky a anglicky. Měl by se vysázet na
+%% jeden řádek. Výchozí je prázdný.
+%          \subtitle{Ukázkový text a dokumentace stylu v \LaTeX{}u}
+%         \subtitle[english]{Sample text and documentation of the \LaTeX{} style}
+
+%% Jméno autora práce. Makro nemá nepovinný parametr pro uvedení
+%% jazyka.
+\author{Roman Pospíšil}
+
+%% Jméno vedoucího práce (včetně titulů). Makro nemá nepovinný
+%% parametr pro uvedení jazyka.
+\supervisor{Mgr. Tomáš Kühr, Ph.D.}
+
+%% Volitelný rok odevzdání práce. Výchozí je aktuální (kalendářní)
+%% rok. Makro nemá nepovinný parametr pro uvedení jazyka.
+%\yearofsubmit{\the\year}
+
+%% Anotace práce, včetně anglické (obvykle překlad z jazyka
+%% práce). Jeden odstavec!
+\annotation{Tato práce ukazuje postup vývoje hry v prostředí Pygame s užitím uměmlé inteligence 
+pro hru samotnou. Čtenáře uvede do základních pojmů pro strojové a zpětnovazební učení . Shrnutím práce je porovnání obou  způsobů učení neuronové sítě. }
+
+\annotation[english]{This theses explains the steps for develppment of a simple game using Pygame with AI comtrolled components. Audience will be introduced with basic terms for mashine lerning and reinforsement learning. Theconclusion of this paper si to compare both types of lerning for neural netwok.  }
+
+%% Klíčová slova práce, včetně anglických. Oddělená (obvykle) středníkem.
+\keywords{python; pygame; neuronové sítě;  strojové učení}
+\keywords[english]{python; pygame; neural networks;  machine learning}
+
+%% Volitelná specifikace příloh textu práce, i anglicky. Výchozí je
+%% 'elektronická data v systému katedry informatiky / electronic data
+%% in system of department of computer science'.
+%\supplements{nejlepší software všech dob}
+%\supplements[english]{the best software of all times}
+
+%% Volitelné poděkování. Stručné! Výchozí je prázdné. Makro nemá
+%% nepovinný parametr pro uvedení jazyka.
+\thanks{Děkuji vedoucímu práce za možnost volby támatu, také za podporu rodiny při studiu.}
+
+%% Cesta k souboru s bibliografií pro její sazbu pomocí BibLaTeXu
+%% (zvolenou nepovinným parametrem biblatex makra
+%% \documentclass). Použijte pouze při této sazbě, ne při (výchozí)
+%% sazbě v prostředí thebibliography.
+\bibliography{bibliografie.bib}
+
+%% Další dodatečné styly (balíky) potřebné pro sazbu vlastního textu
+%% práce.
+\usepackage{lipsum}
+\usepackage{longtable}
+
+
+\begin{document}
+%% Sazba úvodních stran -- titulní, s bibliografickými údaji, s
+%% anotací a klíčovými slovy, s poděkováním a prohlášením, s obsahem a
+%% se seznamy obrázků, tabulek, vět a zdrojových kódů (pokud jejich
+%% sazba není vypnutá).
+\maketitle
+
+%% Vlastní text závěrečné práce. Pro povinné závěry, před přílohami,
+%% použijte prostředí kiconclusions. Povinná je i příloha s obsahem
+%% elektronických dat.
+
+%% -------------------------------------------------------------------
+
+
+\newcommand{\BibLaTeX}{\textsc{Bib}\LaTeX}
+
+% \noindent\textcolor{red}{\LARGE Upozornění: Následující text
+%   dokumentace stylu, vyjma přílohy~\ref{sec:ObsahData}, je rozpracovaná
+%   a (značně) neúplná verze!!!}
+
+\section{Úvod}
+\subsection{Výběr tématu}
+Video hry v dnešní době  představují rychle rostoucí odvětví se značným obratem, například v období karantény v roce 2021 se prodeje spojené s videohrami zvedly o 35 procent na 1,6 miliardy dolarů \cite{1}. V letech 2023 -2024 se růst obratu spomalil ale pořád má rostoucí tendenci .Existuje mnoho žánrů, ale rád by jsem zmínil edukativní oblast her. Tyto aplikace lze vyžít pro zlepšování paměti až po pžedstavení vyučovanému tématu při studiu.
+
+Hra fotbal byla pro tupo práci vybrána z nekolika důvodů. Je to týmový sport, kde výsledek záleží na spolupráci nekolika hráčů, tento sport a téma je ve všeobecne oblíbené a to i pro přímo neaktivní hráče.
+Velikou inspirací pro tuto práci byla soutěž robocup \cite{2}, kde humanoidní roboti nebo virtualní  hráči hrají fotbalové zápasy. Pravidla k implementaci Flatballu vychází ze hry Malý fotbal, kde jsou  dvě mužstva každé po pěti hráčích. Zaměrení práce bude zejména na učení hráče, a to jak s učitelm tak i se zpětnou vazbou.
+ 
+
+
+
+\section{Návrh}
+
+\subsection{Pojmenovani hry a pravidla }
+ Jméno počítačové hry by mělo odkazovat na téma hry a také být dostatečně originalní. Na trhu existuje mnoho variant pro simulaci fotbalového utkání nebo jen ve formě simulace trenéra kde se výsledky zápasů neodehrejí ale vypočtou. Jednoduché hledání na stránkách Steam \cite{3} ukáže pro klíčové slovo fotbal přes 280 výsledků.Pokud by jsme hru nazvali Simulátor fotbalu mohlo by se toto ztratit v velkém množství existujících her, kam musíme řadit i aplikace pro mobilní zařízení.  Název byl zvolen Flatball, jakožto reference na 2D grafiku a slova football, tímto zajistíme jistou unikátnost, prozatím nám hledaní na stránkách Google nenajde žádné výsledky . 
+
+Jak již bylo zmíneno pravidla budou do jisté míry zjednodušena. Nebudeme uvažovat možnosti faulu či jiná nedovolené intarakce mezi hráči. Dále nebudeme vhazovat míč po opuštění hrací plochy. Návrh počítá s pevnými mantinely od kterých se míč odrazí zpět do hřiště obdobně jako napřílad u míčové hry floorball.  Vyparování bude koncipováno tak aby nová pravidla nebylo obtížné do budoucna přidat. Hráče Flatballu budu nazývat uživatelem aby jsem předešel se záměnou za fotbalového hráče ve hře.  
+
+ 
+\subsection{Technologie }
+
+\subsubsection{Python}
+
+ Jako programovací jazyk byl zvolen Python. Je to  je vysokoúrovňový programovací jazyk.  Nabízí dynamickou kontrolu datových typů a podporuje programovací paradigmata jak funkcionální tak i oběktově orientované. Umožňuje vyzkum  v oblasti AI díky knihovnám jako např. TensorFlow, které usnadňují vytváření a trénování modelů. Také je k dispozici modul openai, který v Pythonu zpřístupňuje API k ChatGPT  a vývoj programů, které tuto AI využívají.\cite{4} 
+ Koncept oběktove orientovaného programování zavádí pojem tříd a jejich metod. Třída je pomyslná forma pomocí které vytvoříme instance stejneho typu. Důvodů pro použití tříd je několik. Aplikace se zpřehlední a pomocí metod  ochráníme vnitřní stavy pro jednotlive instance. Simulovaný fotbalový hráč musí mít určité vlastnosti jako jsou : souřadnice, id, jmeno atd. Dále bude provádět akce, které změní jeho vnitřní stavy. Tyto akce budou též stejne pro všechny hráče např. pohyb který zmení hodnoty souradnic. Vsechny  akce jsou vytvořeny jako metody patřící určité třídě. Hodnoty instance třídy budeme měnit pouze pomocí metod a tím zaručíme že se nedostanou do neurčitých stavů. Metody si již vyjímečné stavy zkontrolují. Metody také někdy představují jinou  abstrakci a to  zasílání zprav mezi třídami.( \cite{5}   
+
+\begin{figure}[!htbp]
+\begin{center}
+\includegraphics[scale=0.8 ]{graphics/exampleclass.png}
+\caption{Příklad třídy}\label{tab:exampleclass}
+\end{center}
+\end{figure}
+ 
+  
+\subsubsection{Tensor Flow}
+
+ Pro práci s umělou inteligencí  budeme používat knihovny  Tensor Flow . Vývoj patří pod společnost Google. Využijeme nástroje pro vytváření modelu neuronová sítě i agenta pro tréning se zpětnou vazbou. Aplikace je pro fotbalové utkání proto jev textu psáno o trénování hráče, ale doslova je myšleno učení modelu.
+K dobrému pochopení tohoto textu je vhodné porozumět základniím prvkům z jakých bude trénování fotbalových hráčů probíhat. Vysvětlíme si jednotlivé pojmy a nastíníme na jaké okruhy  je AI rozděleno. 
+ 
+Pomoci AI lze vytvořit takový nástroj, kde nechceme v mnoha případech nemůžeme  přímo naprogramovat rozhodovací logiku. Pokud vezmeme příklad fotbalového hráče, tak ten je mimo jiné v programu definován:  souřadnicemi na hrišti, pozicí v teamu a úhlem otočení ke svojí bráně.  Tyto hodnoty má každý spoluhráč i protihráč bylo by velice obtížné vytvořit rozhodování co má v každé situaci hráč zvolit. 
+Základní dělení AI je znazorneno na diagramu \ref{tab:aidiagrams} . Téma AI  je velice obsahlé,   uvedeme pouze části  přímo související  s aplikací. Umělá intelligence je definována jako nástroj, který dokáže napodobit chování člověka. Tedy dokáže se učit z předešlých zkuseností. Vzdělávací videa od IBM Technology toto chování  definují jako  schopnst oběvovat a  odvozovat z informací které nejsou dopodrobna definované.   \cite{6}   
+
+
+\begin{figure}[!htbp]
+\begin{center}
+\includegraphics[scale=0.8 ]{graphics/aidiagrams.png}
+\caption{Rozdělení AI}\label{tab:aidiagrams}
+\end{center}
+\end{figure}
+
+
+ Součástí umělé intelligence je okruh nazvaný strojové učení. Jsou to určitým způsobem zprocesovaná data ,ve kterých hledáme určité vzory a podobnosti. Důležité je, že toto hledání není explicitně naprogramováno např. pomocí podmínek.  Aplikace  bude používat dva různé druhy strojového učení : s učitelem a se zpětnou vazbou. Učení s učitelem znamená, že data jsou námi ohodnocena. V našem připadě uživatel posoudí situaci na hřišti a vybere jaká je nejvhodnější akce pro trénovanáho hráče. Platí čím vice příkladů je ohodnoceno tím lepší vyhodnocování bude mít výsledný model.
+
+  Učení se zpetnou vazbou používá systém odměn podle kterých je učení vyhodnoceno. Celý systém se skláda z agenta, který oběvuje různé možnosti v trénovacím zápasu. Tento zápas je tzv. Environment tedy prostředí kde agent působí.  Agent provádí náhodne jednu z akcí z předem definovaného seznamu a poté vyhodnocuje jaké akce přinesou nejlepší odměnu.  Matematický popis tohoto vyhodnocování je nad rámec této práce a bude zmínen ve zjednodušené formě.  
+\cite{7} 
+
+
+\begin{figure}[!htbp]
+\begin{center}
+\includegraphics[scale=1 ]{graphics/reflow.png}
+\caption{Diagram RE treningu}\label{tab:reflow}
+\end{center}
+\end{figure}
+
+
+ Jedním ze spůsobů  pro strojové učení je hluboké strojové učení, které využívá matematického modelu nazvaným neuronové sítě. Tento model je poměrně složitý a odkazuje na skutečnos , že data ze reálneho světa kolem nás nejsou lineární. Modely pro zpracování obrazu mají jako vstupy jednotlivé pixely a  počet vstupů je v řádech  ${10^5}$ a více. Linearní závislost vesvětlíme na jednoduchém příkladu. Data a jejich hodnoty  jsou pouze pro ilustraci a nepředstavuji žádné realné měření.   
+
+
+
+\begin{figure}[!htbp]
+\begin{center}
+\includegraphics[scale=0.5 ]{graphics/linearnelineargraf.png}
+\caption{Lineární, nelineární data}\label{tab:linearnelineargraf}
+\end{center}
+\end{figure}
+
+
+ Pro linearně závislá data lze pro známou hodnotu váhy dopočítat výšku a to bez jakékliv chyby, předpis by byl asi takto  výška(váha) = 1*váha + 90, graf a. Pro skutečná  data leze dopočítat lineární předpis  kde je ovšem vzdy nějaka odchylka od skutecných hodnot, graf b. Lze nalést přesnejsi řeseni a  takový předpis, který bude jen s  minimalní chybou, to nam umožni nonlinearita. Presnejší řešení je ale za cenu delšího vypocetniho času. Umělá neuronová síť  je inspirována přenosem informace pomocí neuronu v lidském mozku. Umělý neuron může mit libovolný počet vstupů ale pouze jeden výstup. Vypočet je naznačen na obrázku, jako vstup je n hodnot. Každe vstupní hodnotě náleží hodnota váhy a také je k výsledku připočten bias. Následně je suma přepočtena pomocí aktivační funkce. V našem případě je to sigmoinda.  Neuronova síť je tvořena soustavou vstupních neuronů, skrytou vrstvou a vrstvou výstupní. Neuronové síti s více skrytými vrstavmi říkáme hluboka neuronová sít výsledek z poslední vrstvy bude pravděpodobnost. Pokud tedy máme pro našeho hráče pět akcí které lze provést tak výsledek je nakolik procent je pro nás výhodná. Součet všech výsledků akcí musí být 100 procent. Hodnota neuronu v hluboké síti záleží na stavech všech předchozích spojeních. Zde si musíme uvědomit, že některa spojeni mohou byt nulová protože hodnota vah může být záporná a pote jsou zpracovány aktivační funkcí. Proces trénovaní takovéto sítě z matematickeho hlediska znamená nalezeníi optimalnich hodnot pro váhy a pro počatecni bias. Takový process se jmenuje back propagation\cite{19}  jelikož pro učeni s učitelem zeznáme vstupní hodnoty a také výstupni hodnoty \cite{7}.  Výpočet pro ukázkový neuron se skládá ze bias hodnoty a součtů součinů všech vstupů  a vah. Tato hodnota je poté vložena do aktivační funkce. Aktivační funkci budeme značit g. Hodnotu spočítáme tedy dle vzorce y= g( $w_0$ + $x_1$ * $w_1$ + $x_2$ * $w_2$ + ... +$x_n$ * $w_n$  ) . V případě hlubokých neuronových sítí jsou  vstupem hodnoty z předešlé vrstvy. \ref{tab:neuronnetwork}
+ 
+ 
+\begin{figure}[!htbp]
+\begin{center}
+\includegraphics[scale=0.5 ]{graphics/neuron.png}
+\caption{Neuron}\label{tab:neuron}
+\end{center}
+\end{figure}
+
+
+\begin{figure}[!htbp]
+\begin{center}
+\includegraphics[scale=0.5 ]{graphics/neuronnetwork.png}
+\caption{Neuronová síť}\label{tab:neuronnetwork}
+\end{center}
+\end{figure}
+
+
+\newpage
+
+\subsubsection{Pygame}
+
+Pro naši hru potřebujeme grafický výstup, k tomuto nám pomůže nástroj  Pygame. Tato knihovna jeurčena přímo pro vytváření her pro jazyk Python. Využijeme nejen částí pro grafický výstup na monitor ale take vestavěné funkce jako zpracování eventů, bez kterých by naše hra nešla ovládat. To jak přímo ovládaní hráčů tak třeba I navigace v menu. Pygame obsahuje I knihovny pro práci se sprites a jejich kolizí, kolize jsou v aplikaci kontrolovány vlastním kódem. Tímto jsou kolize fotbalových hráčů a míče více pod přímou kontrolou. Sprite se nazývá object ve hře, který se může hýbat a ovlivňovat okolí či jine sprites. Například to může být kosmická loď, střely nebo jiné  části. Kolize je moment ve hře kdy spites sdílejí stejní proctor.\ref{tab:kolize}   Pokud kolize nastane změní se stav jako například střelení protivníka atd. 
+Eventy které budeme potřebovat jsou stisk klávesy, pozice při kliku myši a číslo tlačítka myši. Je důležité zmínit, že Pygame pracuje se souřadnicemi stejným způsobem jako CRT obrazovky tedy počátek souřadnic je v levém horním rohu. Pokud tedy zvětšíme souřadnici y bodu A, tento bod se posune směrem dolů od horní hrany monitoru.  
+
+
+\begin{figure}[!htbp]
+\begin{center}
+\includegraphics[scale=1 ]{graphics/pygameflow.png}
+\caption{Pygame flow}\label{tab:pygameflow}
+\end{center}
+\end{figure}
+
+\newpage
+
+\subsubsection{XML}
+
+ Uživatel může v aplikaci vytvářet své vlastní fotbalové hráče a kombinovat je do nových týmů. Musíme však umožnit aby tyto změny mohly býti uloženy v opačném případě by zážitek ze hry mohl být negativně ovlivněn. Trénování hráčů může v některých případech být v řádu hodin, proto musí být zajištěn způsob uložení pro další spuštění aplikace. Z volil jsem ukládání struktury xml práce s tímto typem bylajednoduší než standart JSON, který by mohl být další volbou pro ukládání dat. Soubor xml ukádá pouzeinformace o hráčích v týmu ale NNmodel se ukládá samostatně pod ID hráče ve fomátu H5.
+
+\subsubsection{Multithreading}
+Multithreading znamená, že běh programu obsahuje více vláknech a některé procesy se dějí souběžně. Pokud je program jen v jednom vláknu instrukce se provádí pouze po sobě.   
+ První větší problém na který jsem narazil v průběhu implementace bylo zastavení aplikace pri spuštění nebo trénování pomocí NN. Problém byl následující. Pygame tak i rozhodování o ovládání hráčů bylo vstejném vlákně. Tento způsob učinil aplikaci takřka nepoužitelnou. Řešením proto bylo oddělení visualizace  do samostatného vlákna. Toto vlákno jen zpracovává obraz a eventy, ale nemění žádná data nebylo tedy třeba řešit problém se synchronizací.
+Další závažný problém byl bohužel způsoben různými vlákny. Ovšem ne ve smyslu používání stejných zdrojů.  Pokud byl TFmodel nahrán hlavním vláknem, jiné vlákno si model již nedokázalo nahrát.  Dle moderovaného TF diskusního fóra není toto bug (chyba kódu) na straně Tensor Flow. Oficiálně nebyla tato část pro verzi 2.9.1 ošetřena pro spouštění ve více vláknech. Oprava mého kódu byla jednoduchá, při spuštění nového vlákna se model znovu hráči načetl. 
+
+
+\subsubsection{Draw.io}
+
+Je vhodné mít proces implementace uspořádán a zdokumentován. Pro vytváření vývojových diagramů jsem používal nástroj kreslení Draw.io, který lze nalést na stejnojmené internetové adrese. Pro zbylé úkoly byl použit balíček MS office. Text práce byl vytvořen pomocí programu Miktex.
+
+\newpage
+
+\subsection{Rozbor archytektury, struktura kodu }
+Při počátečním návrhu byl vytvořen diagram tříd. Diagram slouží k jednodušímu zorientování jednotlivých závoslistí popřípadě chybějících částí návrhu. První diagram vypadal takto.  Závislosti pro team a rozhotčího paltí pouze pro spuštění hry. Instance tříd player jsou vytvořenu pokud je potvrzen zápas nebo tréning. Organizace hráčů svými trenéry jsou pouze hodnoty z xml souboru.
+
+\begin{figure}[!htbp]
+\begin{center}
+\includegraphics[scale=0.6 ]{graphics/classesall.png}
+\caption{Původní návrh tříd}\label{tab:classesall}
+\end{center}
+\end{figure}
+
+
+
+\subsection{Vývojové  prostředí }
+
+SW   \\
+Verze python 3.7.8  \\
+Verze tensor flow 2.9.1  \\
+Windows 10 \\
+HW  \\ 
+RAM 8.00 GB  \\
+Processor   Intel(R) Core(TM) i5-8300H CPU @ 2.30GHz   2.30 GHz  \\
+ 
+
+\section{Vypracovani }
+
+\subsection{Hlaví části návrhu }
+
+Po návrhu tříd bylo nutné zkontrolovat jak bude probíhat volání jednotlivých součástí a jak bude celá implementace spolupracovat. Pro tetno účel byl vytvořen celkový přehled. \ref{tab:hlevel}V paxi označovánjako "high level flow" tedy celkový přehled implementace. 
+
+Knihovny programu byly rozděleny dle souvisejících celků. Třídy pokud obsahují více metod jsou dány do samostatné hnihovny. Dále jsou odděleny funkce pro čtení a zápis pro xml soubory. Funkce pro tréning mají také oddělený kód. \\
+  
+
+ \begin{center}
+\begin{table}[h]
+
+		\caption{Rozvržení programu}\label{tab:tab1} 
+\begin{tabular}{ |p{3.5cm}|p{10cm} |} 
+ 		\hline
+		 knihovna &  funkce   \\
+		 \hline
+		menu &obsahuje třídu button, vykreslování tlačítek a menu \\
+		třída ingamer & třída pro definici pohybujícího se objektu hry \\
+		třídy ball a player &potomci třídy ingamer\\
+		RE training & vytváření agenta a prostředí pro tréning  \\
+		neural network &  vytváření modelu NN, načítání existujících modelů \\
+		screens & vykreslování jednotlivých obrazovek a rendrování textu \\
+		ostatní třídy & rozhotčí, okno aplikace, hriště \\
+		xml  & načítání a ukládání xml souborů\\
+		pomocné funkce& dopočítávání velikostí , definice textů \\
+		main & hlavní program s nekonečnou smyčkou hry     \\
+		\hline
+\end{tabular}
+\end{table}
+\end{center}
+
+
+
+\subsection{Ovladaní} 
+ Ovládíní her může být realizováno různými způsoby například užitím specializovaných ovladačů pro letecké simulátory, ale častějiším způsobem pomocí klávesnice a pocitacove mysi. Flatball bude ovládán pomocí mysi pro navigaci v menu a určení směru hráče. Klávesnice bude sloužit pro pohyb hráče nebo reset hry. Zvolené klávesy jsou pro standartní polohu levé ruky kde se nachází palec nad klávesou mezerníku a prostředníček nad klávesou w. Proto klávesy w,a,s a d bývají pro herní klávesnice zvírazněny od ostatních písmen. Bylo by velice nepraktické zvolit kombinaci písmen pro ovládání, která nejsou přímo u sebe jako například w,l . V návrhu je použita klávesa p pro reset tréningu. Pozice tohoto písmene zaručí že není omlylem spuštěn reset. Nastavení kláves i tlačítek myši je uživateli během tréningů pro informaci zobrazeno.  
+
+ 
+\subsection{Číselníky} 
+ Při implementaci je velice výhodne pužívat číselníky, které v python existují jako specialní trída Enum. Pomocí hodnot z číselníku se kód stavá více přehledneší a take je více flexibilní pro případné změny. Enumy jsou používany pro jednotlivé druhy vykreslení na obrazovku, stavy hráců a zápasu nebo v neposlední řade pozice hráče v teamu. Takto je s enum pracováno v kodu. Pokud by se v programu použila pro podminka přímo hodnota 0.1 takřka jiste by to pro nás znamenalo neprijemnosti pro mozné zmeny.  je na první pohled zrejné jake hodnoty se porovnavaji.   
+ 
+\begin{kicode}{Python}{}{Příklad číselníku}
+class PlayerType(Enum):
+   GK =  0.1
+
+if trained_player.player_type ==  PlayerType.GK.value:
+\end{kicode}
+
+ 
+\subsection{Oznámení a error číselníky}
+ Aplikace v průběhu můze komunikovat s uživatelem pomocí pin zpráv, název je odvozen od papíroveho vzkazu připevněnnho  na nástěnku. Pokud by aplikace neobsahovala alespoň  jednoduchou zpětnou vazbu pro uživatele, hrerní zážitek by nemusel býti dobrý. Predstavme si ze uživatel omylem opakuje některou akci např generování hráče pro již plný team. Hra jej informuje z jakeho důvodu tuto akci nelze provést, bez zpětne vazby by mohl aplikaci přestat používat v doměni že jde o chybu ve vypracovani. Program obsahuje celkem 3 různe druhy zpráv. První je neutralni hodnota která se nepropisuje na obrazovku, pouze program informuje sám sebe že nenastala nestandartni situace. Druhý tip zprávy je kladné oznamení, například při vygenerovanem hráči či započaté hre. Poslední jsou oznameni negativní tedy error kde uživatel provádí nedovolenou akci nebo nepovolenou kombinaci akcí. 
+
+ 
+\subsection{GUI}
+
+\subsubsection{Třída window }
+Některá data jsou uložena ve třídě window jako například velikosti sloupců ,řádků a jazyk aplikace. Poměr velikosti okna je zvolen 16:9 tak jako u monitorů. Uživatel může zvolit mezi  třemi přednastavenými hodnotami. Při změně rozlišení se zavolá metoda přepočtu hodnot pro hrací pole. Dále třída window při eventu myši předá souřadnice dále a třída trenéra nebo rozhotčího zkontroluje zda výběr koresponduje s některou z hodnot v metodách. Je zde také uložen pyagme surface potřebný pro zobrazení dat.
+
+ 
+\subsubsection{Rozdělení a vzhled obrazovky}
+ Počítačová hra je vizuálně rozdělena  do několika částí , tyto části jsou viditelné dle důležitosti pro uživatele. Při zápasu samotném je to hrací pole, alepro organizaci hráčů a teamu jsou důležitá zobrazená data popřípadě volby z hlavního menu. V této části popíšeme funkce jednotlivých obrazovek (screens). Každá obrazovka má svoje ID dle kterého jsou v hlavním cyklu  vybrána a zobrazena jen ty správná data.Pro zachovani stejného zobrazeni je na pozadi všech obrazovek skrytý grid, nastaveni tohoto gridu je instanci okna aplikace. Tlacitka jsou navrzena jako obdelnikové pole s malým radiusem, dále je nad tlacitky zobrazena lista která spojuje skupinu těchto tlačítek .
+\\
+\\
+Popis částí: \\
+1   menu \\
+2  data pro hru,tréning nebo organizaci týmu \\
+3  data pro informace ze hry nebo informace o hráčích \\
+4  zobrazení hracího hřiště    \\
+5  uvítací obrazovka, nápověda \\
+ 
+\begin{figure}[!htbp]
+\begin{center}
+\includegraphics[scale=0.5 ]{graphics/screensections.png}
+\caption{Rozdělení obrazovky}\label{tab:screensections}
+\end{center}
+\end{figure}
+ 
+
+ 
+\subsubsection{Hlavní menu, tlačítka } 
+
+ Při spuštění  jsou vytvořena všechna tlačítka. Při eventu click se načtou  souřadnice kursoru myši a ty zpracuje funkce, která zkontroluje vsechny tlačítka a hledá shodu pro dvě podminky k aktivaci tlačítka. První z nich je pozice myši shodna s jakýmkoli bodem uvnitř plochy tlačítka. Druhá podmínka je, že aktualní screen ID je rovna prvnímu dvojčíslí z ID tlacitka. Tímto zaručíme, že je tlacitko neaktivni na ostatnich orazovkách. Menu i tlacitka jsou rozdělena na dvě hlavni skupiny a to: hlavni menu a menu pro jednotlive orazovky. Tyto ostatni tlacitka jsou v jednotlivych skupinach vykresleny v spodnim části  viz rozdeleni obrazovky. 
+ 
+ 
+\subsubsection{Uvodní obrazovka, nápověda } 
+ 
+V mnohých počítačových hrách lze najít jistou podobnost, uvítací obrazovka přímo na části hry nebo třeba jen na název. Totoplatí pro různé žánry příkladem mohou být  Mafia nebo CitiesSkyline. I přesto, že Pygame obsahuje funkce pro práci se zvukem tak v e Flatball toto není využito jelikož audio není přímým aktorem hry.
+
+Nápověda obsahuje podrobnějsí návod ke hře v českém i anglickém jazyce 
+
+ 
+\subsubsection{Obrazovka pro trenéry} 
+Tyto obrazovky jsou kresleny stejnou funkcí která dle screen ID v argumentu funkce vykreslí jiná tlačítka a nadpisy. 
+ 
+Pro trenéra domácich máme dvě obrazovky. Obrazovka Team management umožnuje provádět organisační  změny v  týmu také týmů jako takových. Trenér může pracovat nejvíce s deseti  tými. Hráce lze z týmu mazat, kopíropvat nebo vytvořit nového. Při vytvořeni hráče v neexistujicim týmu se automaticky novy tým vytvoří. Tento nový tým bude znázorněn červenou barvou po naplnení týmu pěti hráči musí uživatel tým uložit pomocí tlačítka save. Osobost nového hráče závisí na někoika předvolbách: set pro NN, povolení jednotlivých vstupu. Kombinacíi těchto faktorů ukazuje hodnota levelu hráče. Všechny tyto informace jsou zretelně uživateli vyobrazeny. Implementace seznamu hráču je pole ve třídě Coach kteránačte data z xml souborů, každý tým je uložený zvlášť. Hráčee lze ato i po treningu upravit  na jinou pozici v teamu. Tato stranka  slouži pro vybráni teamu do zápasu , výběr indikován zeleným razítkem.
+
+Druhou obrazovkou je tréning. Pro tréning je třeba označit trénovaneho hráče a výber potvrdit, dale je třeba označit tým proti ktéremu bude tréning probíihat. Hra nedovoluje tréning týmu se sebou. Tento výběr vedl ke konfliktum v ukládání modelů. Máme tu analogii ke skutečnému zápasu kdy pět hráčů  nemuže vytvořit dvě družstva. Základni dva druhy tréningů je s učitelem a nebo se zpětnou vazbou. Toto je psáno podrobneji později v sekci zaměřené na trening hráčů. Uživatel může zvolit situaci pro jakou je hrac trénován na vyber jsou tri zakladni. Trénováni brankáře je zcela specfické a proto se generuje hrište s míč ktery jiz ma jistou rychlost a směřuje z různých oblasti hřiště k brane. Druhá volba tréningu je pro start hry kde po začátku se hráči musí posunout z dvoustupu na správnou zonu dle svého typu. Posledním typem trénovani je zona svého působeni. Tuto zonu lze nastavit a měla by reflektovat hráčův typ například utočník bude trénovat před bránou sopeře. Toto nastaveni je uloženo v třídě Coach a při restartu tréningu je vždy stejne. Obdobne lze nastavit i zonu pro míč. 
+
+Sekce trenéra hostů umožnuje pouze vybrat týmy do hry. Pokud hostující tým prijede, pouze odehraje zápas ale netrénuje. Také si představme situaci kdy si můzou dva uživatelé aplikace zaslat data pro týmy pro vyzkouseni jejich formy. V tomto případě nechceme aby někdo zkopiroval naučený skill hráčů který mohl zabrat poměrně veliké usilí. Pro zaslání  jiného teamu postačí pouze xml soubor a 5 souboru s modelem kazdeho hrace.  Tyto soubory třeba zkopirovat do složky "away" v adresari s aplikací.
+
+Posledni screen v trenerske sekci jsou statistiky ktere zobrazi data obou treneru. 
+
+Obrazovky pro Trenéry jsou pouze vykreslení dat z pole, sloupce reprezentuji jednotlive týmy a řádky hráče v teamech. Trenér ma uloženy dva záporné indexy které znamenaji nevybrane misto v poli, dále dočasné uložení pro tuto hodnotu pro pripad ze se kopiruje hrac. Je tedy treba originalni misto a nové misto. 
+
+ 
+\subsubsection{Obrazovka pro rozhotčího} 
+ 
+ Tyto obrazovky maji za ukol ukázat předzápasové statistiky a  kontroluje se zda jsou do zápasu přihlášení právě dva týmy. Průběh zápasu lze pozastavit. Obrazovka má také možnosti pro pozastavení pozastaveného zapasu. Obdobně jako pri trenigu, zápas lze spustit v několika variantách . Lze vybrat ktery tým bude ovládán počítačem a který uživatelem, posledni výběr je zápas ovládán jen počítačem. Pro tým ovládán uživatelem platí jednoduché pravidlo a to vždy jeden z hráců je vládán manualně ostatní hráče  ovladá NN. Mezi hráči lze přepínat myší. 
+
+\subsubsection{Obrazovka pro nastavení} 
+ 
+ Hra je od prvního návrhu myšlena jako dvoj jazyčná pro anglický a český jazyk. Mezi jazyky lze přepínat v sekci nastaveni.
+Druhou nabídkou pro nastavení je grafika a rozlišení .Zde lze menit na jedno ze tří před definovaných rozlišení. Lze zde vypnout grafiku hráčů. Tato funkce má spíše studijni účely bez pixel artu lze dobře pozorovat kolize a odrazy míče.
+Poslední část je detajlnejsi konfigurace tréningových  kol a časů zapasu. Každá možnost konfigurace obsahuje stručný popisek změny v nastavení. 
+
+ 
+\subsubsection{Obrazovka pro hru} 
+ 
+Při  průběhu zápasu  se zobrazi  hřiště  a pod nim základni info o označeném hráči.. Je zde volba pro pozastaveni hry a pro restart mice. Hráči mohou míč dostat do rohu ze kterého se vněkterých případech sami nepřesunou. Proto je zde rozhotčí který jako jediný může resetovat pozici míče. Samozrejne zde nalezneme i ten nejdulezitejsi udaj , počet vstčelených branek . Pokud otevřeme hlavni menu hra sea utomaticky pozastavi. Uživatel musi mit na pameti ,že započatý zápas musi byt ukončen v opačném případě neze nový zápas spustit. Pokud kontrola před zápasem neproběhnedobře aplikace zašle pin zprávu. 
+
+ 
+\subsubsection{ Obrazovka pro tréning} 
+ 
+ Tréningové obrazovky funkčně vychazi z brazovky zápasu. Jak vizualne tak i funkčně, trening je vlastne spuštěný zápas s přidanými kontrolními kroky a pozměněným zobrazením informací. RE trening je spuštená funkce patřící do hlavniho game loop. Vyobrazeni RE treningu můžeme vypnout, zůstane původní screen s informaci o zacatku treningu. Ovšem v tomto režimu tréning nelze vypnout. Předpokládám , že uzivatel spustil skrytý trening za ucelem plneho trenovani, pokud by uživatel rád  viděl jen část trénování tak zapne vizualizaci. Tato obrazovka umožňuje tréning ukončit.  
+
+\subsubsection{Grafika hráčů } 
+ Hráči mají dvě volby vykreslení : jako barevný kruh dle týmu a nebo jako pixel art příšery(4).  
+
+\begin{figure}[!htbp]
+\begin{center}
+\includegraphics[scale=0.3 ]{graphics/pixelart.png}
+\caption{Pixel art}\label{tab:pixelart}
+\end{center}
+\end{figure}
+
+ 
+\subsection{Popis ostatních tříd} 
+\subsubsection{Ball, Player} 
+
+ V částí hovořící o Pygame jsme definovali sprite v našem případě jde o míč a deset hráčů. Pro tento účel je vytvořena třída ingamer. Jak hráči tak i míč mají společných mnoho vlastností. Musejí mít pozici na hřišti, visualizaci a směr možného pohybu. Dále jsou vytvořeny třídy player a ball které dědí ze třídy ingamer. 
+
+Největší rozdíl mezi těmito třídami je metoda move. Míč musí mít zaručeno, že se může odrazit zatímco hráč tuto možnost z logiky hry mít nemůže. Tedy pokud neuvažujeme nějaký nestndartní mód hry, mapříklad Zorb football. I když pixel art hráčů má nepravidelný tvar, ve výpočtech třídy ingamer je reprezentován kružnicí. Kružnice obdobně jako počet stupňů při otácení je zvoleno pro optimalizaci jak hry samotne tak i RE treningu. Také nám odpadá složitý výpočet kolizí. 
+
+ 
+\begin{figure}[!htbp]
+\begin{center}
+\includegraphics[scale=0.5 ]{graphics/kolize.png}
+\caption{Výpočet kolize}\label{tab:kolize}
+\end{center}
+\end{figure}
+
+
+
+ Kolize nenastala pokud vzdálenost d středů kružnic je vetší než součet poloměrů pro sprite A a sprite B. 
+
+ Pohyb ingamers je z technického hlediska jednoduchý, k souřadnicím středu ingamer [x,y] přičteme vektor v. Zde bylo důležité vyřešit výpočet vektoru v a kontrolu před samotným pohybem hráčů a míče. Hráči mají uloženo zda hrají za pravý nebo levý tým na hrišti. Event Pygame předá souřadnice od počítačové myši. Souřadnice mohou být též jiného ingamer na hrišti, výpočet je stejný. Souřadnice vytvoří pravoúhlý trojúhelník ve kterém pomocí funkce tg dopočítáme úhel. Výpocet naznačen \ref{tab:angle} . Metoda výpočtu úhlu automaticky dopočítá vektor v. Hráči i míč mají definován velikost kroku. Hodnoty vektoru v se dopočítávají pomocí velikosti tohoto kroku. Jelikož jde o souřadnice pixelů musí být hodnoty vždy celá čísla. Z tohoto důvodu pro uhly např 45 stupnů se krok zaokrouhlenim přepočte a v = [1,1]. Takový hráč se ve hře v porovnání s ostaními pohubuje pomaleji krok se poté rovná $\sqrt{2}$. Zde je také srovnání s skutečnými hráči, kdy úkrok je pomalejší nežli krok vpřed.  
+
+
+\begin{figure}[!htbp]
+\begin{center}
+\includegraphics[scale=0.65 ]{graphics/angle.png}
+\caption{Výpočet úhlu třídy ingamers}\label{tab:angle}
+\end{center}
+\end{figure}
+
+
+\begin{figure}[!htbp]
+\begin{center}
+\includegraphics[scale=0.5 ]{graphics/velocity.png}
+\caption{Vektor pro pohyb ingamers}\label{tab:velocity}
+\end{center}
+\end{figure}
+
+
+
+ Kontrola pro pohyb hráče se provede jako jednotlivé kontroly které se na konci vyhodnotí. Závěrečná kontrola určí zda se pohyb hráče provede. Nejprve zkontrolujeme zda dojde ke kroku mimo hrací plochu. Dále zkontrolujeme zda se před hráčem nenachází míč. Pokud by hráč svým krokem posunul míč mimo hřiště pohyb hráči nepovolíme. Pokud je místo před míčem prázdné předá hráč míči malou rychlost a provede pohyb. Také se hráč stane vlastníkem míče a to pokud se k míči dostane na určitou vzdálenost, nastaveno na 5 pixelů. Pokud hráč uděla pohyb od míče míč ztrácí vlastníka. Tento systém je navržen tak že posledníhráč který příjde k míči se stává jeho vlastníkem. Pouze vlastník míče může provést jeho odkopnutí. Vlastník míči též předá úhel směřování. Pro optimalizaci hry nemá hráč možnost přímo vybrat úhel jakým bude míč směřovat, ale záleží z jakého směru k míči přišel. 
+Pohyb míče také zkontroluje zda není výsledné poloha za hranice hřiště pokud ano odrazí se pod stejným uhlem a pokračuje v pohybu. Tento odraz neubere míči žádnou rychlost ta je snížena pouze po kolizi s hráči. Kolize s hráčem tak jako při skutečném zápasu nedá míči přesný odraz ale vygeneruje zcela náhodný směr. Míč má vlastnost rychlost která určí zda je míč v pohybu. Rychlost získá míč od hráče pokud provede zkontrolovanou akci kopnutí do míče. V hlavní herní smyčce potom míč kontroluje za má rychlost a zavolá metodu move. 
+
+
+\subsubsection{Coach} 
+ Trenér hráčů bude mít v aplikaci obdobné funkce jako ve skutečné hře. To znamené, že trenér organisuje tréningy, deleguje týmy do hry. Lze hrát jak přátelské utkání teamů patřící stejnému trenérovy tak i zápas proti hostujícímu týmu. 
+Možnosti trenéra domácích také obsahují team management. Hra začne s defaultně vytvořeným netrénovaným týmem. Trenér může vytvořit nové hráče nebo kopírovat již existující hráče. Kopie vytvoří zcela nového hráče avšak zachová hodnoty NNmodelu. Organisace hráčů je dle ID které tvoří originální hodnota časového razítka při vygenerování. Může nastat tedy situace, že dva hráči mají stejné jméno ale ID je pro každého jiné. Jméno se při generování bere náhodně z seznamu asi sta hráčů.
+Kontroly které trenér provádí pro organizaci teamu jsou založené na enum pro prázdné sloty teamů a hráčů. Trenér pozná zda lze team uložit zda pri generování hráče již existuje team atd. Dále si trenér uchovává informaci zda byl tým změněn a potrebuje uložit. Například při smazání hráče nebo pri změně pozice hráče. 
+ 
+
+\subsubsection{Reff} 
+Rozhotčí má na starosti kontrolu týmů do hry a kontrolu hry samotné. Při spuštění hry probíhá kontrola pro složky kde se ukládá průběh hry. Pokud se složka Teams v adresáři nenalézá je vytvořena spolu s základním teamem. Tento team se nazývá A-team a po vytvvoření mají hráči netrénovaný NNmodel. Pokud probíhá zápas nebo tréning rozhotčí kontroluje zda nebyl vstřelena branka. Pokud ano pozice míče i hráčů se nastaví na dvojsup u středu hřiště. Zápas může začít pokud jsou od trenérů zapsáni právě dva teamy. Pokud tato kontrola není v pořádku uživatel je informován pin zprávou. Tato funkce se provede ve jako dvě kontroly. Nejprve rozhotčí zkontroluje počet vybraných teamů do hry pokud ano jsou tyto teamy nahrány do pole teams{\_}for{\_}game. Toto pole obsahuje dva týmy a nastavení zda jsou kontrolovánu uživatelem nebo počítačem. 
+
+ 
+\subsubsection{Game field} 
+ Pro zápas je důležité hřiště, pro tento účel slouží třída game{\_}field. Jsou zde definovény rozměry a poloha v okně aplikace. Obsahuje údaje o velikosti brány. Pomocí této trídy si  hráč vypočítá číslo sektoru ve kterém se právě pohybuje. Důležitá hodnota je dolní levý roh hřiště od kterého se dopočítávají ostatní rozměry. Sektor je dvoučíslí které vyjadřuje kde se hráč nachází je počítán vždy ku bráně svého teamu. Tedy sektor pro hráče na obrázku bude 13. Sektor se vypočte rekurzí při definovaném početu volání kdy funkce volá sama sebe, jednotlivá volání jsou oddelena tečkou. Aktualní nastavení je 1x. Aplikace bude pro náš případ ukazovat 13.32  
+
+ 
+\begin{figure}[!htbp]
+\begin{center}
+\includegraphics[scale=0.5 ]{graphics/sektor.png}
+\caption{Výpočet sektoru}\label{tab:sektor}
+\end{center}
+\end{figure}
+ 
+\subsection{AI}
+\subsubsection{Hracovy vstupy} 
+ Uživatel může pro fotbalového hráče vybrat jeden ze dvou setů vstupů pro NN. Oba sety mají vždy 2 stejné vlastnosti a to: hráčův ůhel kam směřuje, jakou hraje pozici(např. brankář) dále se data mění dle následujícího pravidla. První set A se v programu nazývá ” Raw” jde o souřadnice x,y všech ingamers tedy míč a 10 hráčů, dohromady  (1+10)*2= 22 vstupů plus 2 které jsou společné. 
+
+Druhý set B má data již zprocesované. Výčet je následující: sektor hráče, vzdálenost od míče, úhel kde se nachází nejbližší spoluhráč, vzdálenost nejbližšího spoluhráče, úhel kde se nachází nejbližší protihráč, vzdálenost nejbližšího protihráče, kontrola zda je trenovany hráč nejblíže míči ze všech 10 hráčů, úhel trénovaneho hráče k míči.
+
+ Původní návrh byl do jisté míry odlišný. Vstupy pro NN  se vytvářel dle  skills{\_}set pouze s prvky které měli pravdivostni hodontu True. Počet vstupnich dat modelu NN se dopočítala z počtu True hodnot. Toto řešení se ukázalo jako problémové kdy byl na výber i  typ B trenovaciho setu . Poté bylo obtížné dopočítat kam se posunuly prvky z původniho pole. Jelikož je NNmodel velice malý kde nejvíce může mít 24 vstupů bylo zvoleno jiné řešení . Pro neaktivní vstupy pro hráče je hodnota pro NNmodel vzdy 0.  To znamená že počet vstupu je definován pouze typem setu ale poté se nemění.
+
+ 
+\begin{figure}[!htbp]
+\begin{center}
+\includegraphics[scale=0.4 ]{graphics/nndesign.png}
+\caption{Návrh neuronové sítě}\label{tab:nndesign}
+\end{center}
+\end{figure}
+
+
+\subsubsection{ AI vystupy} 
+ Na základě vstupů do NN je vybrán jeden z následujicích akcí. Hráč může: otočit se doleva nebo do prava, udělat krok, kopnout do míče a nebo neprovést žádnou akci. Otočení je vždy o +,- 22 stupňů tato hodnota byla vybrána jako optimální pro průběh hry. Dále může fotbalový hráč udělat jeden krok ten bude ve směru vektoru v . Možnost neprovést akci je například pro brankáře kdy je míč na druhé straně hřiště . Poslední možností je kop do míče, tato akce má efekt pouze pokud je hráč ve stavu vlastník míče.
+Uživatel aplikace vybere jak typ setu tak jaké data set nepředá NNmodelu. Toto nastavení je osobnost hráče a později nelze změnit.
+Konkrétně je toto implementováno jako pole skills{\_}set pravdivostních hodnot kde delka zaleží nadruhu A nebo B. Pri vegenerování hráče si trener ulozí skills{\_}set spolu s dalšími definicemi hráče. Instance hráců pro zápas se vytvoří až při před-zapasové kontrole a to zhodnot uložených u svých trenérů.
+
+ 
+\subsubsection{ Tréning } 
+Trenování hráče je možné rozdělit dle dlou hlavních způsobů.
+
+ Trénování s učitelem. Učitel je vtomto případě uživatel aplikace, který určí jaká akce je ta nejvýhodnejší v dané situaci na hřišti. Musíme mít ovšem na paměti, že v osobnosti hráče muže být určité nastavení vstupů pro NN (naříklad hráč nemá pozice o protihráčích) ale uživatel uvidí celou hru. Toto je při RE tréningu ošetřeno. Trénování s učitelem je dále rozděleno na statické a dynamicke . Při statickém tréningu se ostatní hráči nehýbaji . Dynamický tréning má nastavení kde pohyb lze pro týmy zvlášť zapnout nebo vypnout. 
+ 
+RE trenování, zde též platí pravidlo o možnosti zapínaní a vypinání pohybů ostatních hráčů. Tato možnost byla zvolena pro optimalizaci učení agenta. Délku tréningu lze zvolit a také počet opakování. V průběhu tohoto cyklu nelze tréning přerušit ale uživatel může stop tlačítkem zastavit tréning pro dalsí opakovaní. Například je zvoleno 20 opakovaní každé po 5000 krocích. Tréning vždy dokončí 5000kroků ale již nemusí začít další opakovani až do hranice 20. 
+
+Průběh vlastního učení NNmodelu je pro každý ze způsobů trochu jiny, vysvětlíme základní principy. 
+1.trenovaní s učitelem \cite{19} 
+Známe vybranou akci pro vstupy NN. Pro každou vrstvu víme které vazby byly nejslinější a ovlivnily nejvíce zkoumanou vrstvu. 
+
+
+
+2.RE trenovani je postaveno na hodnotách odmen které lze získat 
+Rewrds ,vysvetli , vypinani, rewards obecne jen gk ma svoje aby bylo univerzalni popis odmeny ukazkou kodu
+ 
+
+V ukázce xnl souboru lze videt data která se ukádají pro každý tým, dále je to NNmodel pro každého hráče. 
+
+\begin{figure}[!htbp]
+\begin{center}
+\includegraphics[scale=0.8 ]{graphics/xmlexample.png}
+\caption{Návrh ukádání hráčů}\label{tab:xmlexample}
+\end{center}
+\end{figure}
+
+
+\subsection{Testovani } 
+Testovování je nedílnou součástí sw developmenu. Jedno z pravidel testování ukazuje že nelze nalést všechny chyby v kodu\cite{20}   . Postup testováni musí být zvolen tak aby se předešlo těm nejkritičtějším chybám v implementaci. Existuje několik druhů testů: unit test, integrační test a UAT. Unit test kontroluje jednotlivé funkce spuštěné samostatně. Integrační test kontroluje funkčnost pokud se několik částí spojí ve větší celek. UAT je finální test většinou na již produkčním prostředí. Tento test kontroluje jak se s výsledným produktem pracuje, i když po funkčí stránce je vše dle zadání. Kurzy pro testování často uvádí příklad s automobilem. Unit test může být například že motor pracuje správně, usazení do karoserie je test integrace kde kontrolujeme zda všechny prvky navzájem pracují správně. Závěrečný test jsou jízdní vastnosti .
+
+Pro kontolu mého vypracování jsem postupoval stejným způsobem. Výpočet sektorů pro hráče je dobrým příkladem unit testu. Funkce pro výpočet byla spuštěna samostatně až prosla kontrolou se testovacími daty byl tento prvek přidán do programu aplikace a otestován jako součást celku. Tento způsob nelze použít pro kontrolu modelu NN. Mnohdy není zřejné jak model provede výpočet. Mnozí odborníci vidí nemoznost zpětnekontroly za potencionalni riziko.\cite{21}  
+Testování pro herní průmysl musí mít veliký důraz na celkovou hratelnost. Není vždy v možnostech herních studii toto zabezpečit a proto hry mohou být v distribuci v tzv předcasnem vydaní. Je to stav hry která není zcela vyladěna a je očekávaná zpětná vazba od hráčské komunity. Prikladem mohou ceska hra Mashibnky jez mnely byt dle Steam(podcarou( platformy v predcasnem vydani az po dobu 2let. 
+
+
+ 
+
+\section{Návod hry Flatball} 
+Instalace - Flatball neni treba instalovat lze jej spustit primo z exe souboru. Je treba zachovat cesty k slozkam s predtrenivanymi teamy a grafikou. 
+Aplikace ma zpetnou vazbu k hraci a informujejej o nejdulezitejsich procesech pri ovadani nebo treningu. 
+Trening hracu hra obsahuje dva defaulni teamy znichz jeden predtrenovany. Predtrenovany team je hostujici team alze jej vybrat pouze pro zapas. Trening nedovoluje aby team trenoval sam se sebou obddobne jako ve skutecnosti nelze aby pet hracu vytvorilo dva peticlene teamy. J treba vygenerovat novy team.
+
+\underline{Generovani teamu} jde po volbe Team management v hlavnim menu. Trener muze organizovat max 10 teamu. Sloupce tabulky reprezentuji jednotlive teamy. Ziskat noveho hrace lze dvoumi zpusoby a to generovani noveho hrace nebo zkopirovanim jiz existujiciho. Pri kopirovani hrace se zduplikuje jeho osobnost I cely trening ale hrac je veden pod novym ID. Pokud se vytvari hrac novy lze nadefinovat veskere vlastnosti. 
+
+\underline{Smazání hrace},pokud by byl hrac omylem smazan aplikace jej nedokazejiz vratit do teamu avsak pokud by to byl dlohodobe trenovany hrac lze zmenit teamovy saving soubor. Postaci zmenit jmeno hrace a ten se nasledujici spusteni znovu nahraje. Pokud tato zmena neni provedena radne muze hru zavest do nestabilniho (!) stavu.
+
+Postup:
+\begin{itemize}
+\item  Oznac hrace a klikni na tlacitko hrac-smazat
+\item  Vznikne volny slot, team zmeni barvu na cervenou , lze mazat hrace I z cervine oznaceneho teamu, tedy z neulozeneho
+\item Kopirovani hrace: 
+\item Oznac hrace a vyber tlacitko hrac-kopirovat ,pole zmodra
+\item  Oznac volne pole
+	\begin{enumerate}
+	\item Volne pole v existujicim teamu, volba hrac-vlozit
+	\item Volne pole v naslednem prazdnem sloupci teamu, volba hrac-vlozit
+	\end{enumerate}
+\item  Pro ulozeni musi byt team zaplnen
+\item  oznac jmeno teamu v prvnim radku tabulky
+\item  klikni na team-ulozit
+\item  sloupec teamu zmeni barvu na sedou, indikace ze novy team byl ulozen uspesne
+\end{itemize}
+
+\underline{Generovani noveho hrace:  } 
+Automaticke nastaveni trenobvaneho setu je predprocesovana data, tuto volbu lze zmenit v nastaveni pro trening a zapas prepnutim na OFF pote bude vybiran jako osobnost hrace druhy set vstupu
+ 
+Postup:
+\begin{itemize}
+\item  Oznac volne pole
+	\begin{enumerate}
+	\item Volne pole v existujicim teamu, volba hrac-novy hrac
+	\item  Volne pole v naslednem prazdnem sloupci teamu volba hrac-novy hrac
+	\end{enumerate}
+\item  Nove zobrazena nabidka informuje jake data bude hrac behem hry videt
+\item Cislicekoresponduji se seznamem ve spodni casti obrazovky, cervena brva oznacuje neaktivni data tuto volbu nelze pozdeji zmenit
+\item   Pole osobnost je soucet viditelnych dat hraci
+\item   Pri klijnuti nahrac-generovat hrace se vytvori novy fotbalista
+\item   Ulozeni teamu viz cast vyse   
+\end{itemize}
+ 
+\underline{uprava noveho hrace: }
+Hraci lze kdykoli zmenit jeho pozici na hristi, ovsem znamena to ze hrac by mel byt trenovan pro kazou z fotbalovych pozic zvlaste pokud je jednaz nich brankar 
+
+Postup:
+\begin{itemize}
+\item  Oznac hrace
+\item  Klikni hrac-upravit
+\item  Klikni pozadovanou pozici
+\item  oznac jmeno teamu v prvnim radku tabulky
+\item  team zcervena
+\item  klikni na team-ulozit
+\item  sloupec teamu zmeni barvu na sedou, indikace ze novy team byl ulozen uspesne
+\end{itemize}
+
+\underline{Potvrzeni teamu } pro trening jde po volbe Trening v hlavnim menu. Pro trening lze vybrat pouze ulozene teamy beze aktualnich zmen. Vyber probiha dvema oznacenima ,nejdriv je vybran trenovany hrac a pote team porti kteremu bude hrat. Na vyber jsou 3 druhy treningu .Prvni je manualni kde uzivatel vybere nejlepsi moznou akci pro zobrazenou herni situaci. Pote muze byt situace zmenena a uzivatel znovu vybere nejlepsi akci.Pocet opakovani je definovan v menu casti nastaveni hry a treningu. Aby hrac rozumel kde je na hristi mic a souperova brana je potreba zhruba 25000 opakovani toto odpovida asiXXXXXXXX hrani. Pri resetu treningove situace lze nastavit kde se mic a trenovany hrac budou objevovvat napr pokud trenujeme utocnika chceme abu trenoval pred souperovou branou. Specialni trening je generovan pouze brankari ktery se vzdy bude po resetu herni situace objevovat pred svoji brano. Take pri trenovani brankare je mic nastaven tak aby mel smer a jistou rycholst smrem k brankari. 
+Dalsi moznosti je trenovani se zpetnou vazbou kde je trenovany hrac plne ovladan pocitacem a odmenen za dobry trening. Treti moznosti je trening se zpetnou vazbou pouze neni promitan na obrazovku a probehne ruchleji. Pro vysledky trenovani pouzitelne pro hru je treba pomerne dusledny trening odpovidajici radu hodin v zavislosti and pouzitym hw.
+Pokud je vybrat typ treningu I zonakdema trening probihat uzivatel klikne natlacitko start trening
+
+\underline{Ovladani manualniho treningu }  je podubné zápasu ale navíc je na obrazovce ukazan stav treningu. Po dosazeni maximalniho poctu kroků se trening pozastavi a vyhodnoti se data, cas vyhodnocení zalezi na nastaveni, býva do 2 vterin. Pote se trening opakuje pocet opakovani I počet kroků je v nastaveni v hlavnim menu. Pokud se trening opusti je automaticku ukoncen ,neni pouze pozastaven jako v pripade zapasu.Infografika na obrazovce vysvětluje ovládáníhráče. Pokud je vstřelena branka jsou pozice nastaveny pro dvojstup jako při zápasu. Uživatel má na výběr a může tento reset sám zvolit dříve. Druhé postavení hráčů je dle nastavení před tréningem tedy určitou zony pro hráče a míč. 
+
+\underline{Potvrzeni teamupro zapas },  tuto kontrolu provadi rozhodci avsak jednotlivi treneri musi teamy zapsat do hry a to provedou v team mangementu volbou select team, teammusi nejdrive oznacit. Potvrzeni je ukazano zelenym potvrzenim. Pokud jsou teamy povrzeny tak oznacte Trening v hlavnim menu. Ukazi se statistiky obou vybranych teamu dale jaky druh zapasu se bude hrat. Prvni dva zapasy jsou pro cloveka apocitac s timrozdilem za jaky team budehrat pocictac. Treti moznost je plne ovladan zapas pocitacem . Delka zapasu lze nastavit v nastaveni zapasu v menu. Zapas zacne volnout zacit hru. Pokud je hra zapocata a pozastavena nelze novou hru zacit pozastavena hra musi byt zastavenatlacitkem ukoncit rozehranou hru.
+Ovladani zapasu Pokud je zvolen zapas s uzivatelem tak jeden hrac z jeho teamu je vzdu ovladan manualne. Mys urcuje kam hrac smeruje. Klavesa W je krok hrace ,mezernik je kop do mice a ma vliv na mic pouze pokud patri hraci a je oznacen zelenou barvou v opacnem pripade namic nedosahne. V pripade ze je treba zapas pozastavit je zde tlacitko pause. V nekterych pripadech zvlaste pokud oba teamy ovlada PC muzou zahnat mic do rohu a uz se z teto situace nedokazi sami zorientovat. Pro tento pripad jezde reset mice na strřed hřiště. Na obrazovce je take aktualni počet vstřelených branek a nazev hrajicich teamu.Po vyprseni casu se zapas automaticky ukonci a data se propisi do statistiky.  
+\\
+\\
+\\
+
+DODELAT \\
+obsah instalacniho souboru
+a
+citace 
+
+(1)https://www.novinky.cz/clanek/internet-a-pc-hry-a-herni-systemy-zajem-o-videohry-dramaticky-narostl-diky-koronaviru-40321387
+(2)robocup
+
+(3)python wiki
+(4)pixel art 
+(5) ibm technology YT kanal
+(6)YT 3blue1brown
+%%Xai https://www.ibm.com/topics/explainable-ai
+
+
+Prehledova cast 
+Datova zakladna\textbf{kistyles}.
+
+%% AI TEORIe https://www.youtube.com/watch?v=52DTXidSVWc
+%% Reinforsment https://www.youtube.com/watch?v=AhyznRSDjw8
+VALUE - Qlerning descrete action space
+POLICY - 
+
+%%Pygame https://www.youtube.com/watch?v=a5JWrd7Y_14\textbf{kistyles}.
+
+
+
+  
+
+%% Závěry práce. V jazyce práce a anglicky. Text pro jiný než
+%% nastavený jazyk práce (nepovinným parametrem language makra
+%% \documentclass, výchozí český) se zadává použitím makra s uvedením
+%% jazyka jako nepovinného parametru.
+\begin{kiconclusions}
+Závěr práce v \uv{českém} jazyce.
+
+(prinos prace) postup rˇesˇenı´ a dosazˇene´ vy´ sledky. Snazˇı´me se vymezit slabe´ a
+silne´ stra´nky.
+
+Flatball se řadí spíše do skupiny výukových her. Hratelnost je dle testování srovnatelná s podobními tituly. I factor zábavy 
+Hratelnost 
+Zabava
+Uceni-AI znazorneni
+Developmen, naucil sem se organizovat relsem neslo mi se vratit nevim cosemenilo od posledne, vicorganisovat praci bo neze jen tak menit veci ale ma byt plan co konkretne
+
+
+Behem zaverecnych testu seprojevila chyba s Nnmodelem. Tato chyba neni oznacena jako blokacni ,aplikaci lze z vetsi casti pouzivat dle navrhu. Pkodud by tato verzebyla v předcasnem vydani opraveno by bylo novou aktualizaci. Pokud uzivatel vybere moznost trénovat hráče pomoci zpetné vazby tento hrác pozdeji jiz nemuze byt trenovan manualne. Avsak pri zápase se tato chyba neprojeví. Detailni zkoumani neprineslo reseni pro opravu teto chyby pred odevzdáním. Uzivatel je infomovan o tomto znamem problemu pomoci pin zprav .
+V k´du je čast vhodná k refaktor90podcatou.Jsou to jedny z prvních funkcionalit vytvorenych pro aplikaci.. Jendá se o vytváření tlačítek a kontroly oznaceni misi. .  
+
+ 
+\end{kiconclusions}
+
+\begin{kiconclusions}[english]
+Thesis conclusions in \uv{English}.
+\end{kiconclusions}
+
+
+  
+
+%% Přílohy obsahu textu práce, za makrem \appendix.
+\appendix
+
+%%   PRILOHY
+
+\section{Diagram implementace}
+
+		\includegraphics[scale=0.5]{graphics/hlevel.png}
+		\label{tab:hlevel}
+
+ 
+
+\section{Ukázky ze hry}
+ 
+		\includegraphics[scale=0.6 ,angle =-90 ]{graphics/gamescreen1.png}
+		 \label{tab:gamescreens}
+
+		\includegraphics[scale=0.65 ,angle =-90]{graphics/gamescreen2.png}
+	 
+
+		\includegraphics[scale=0.65 ,angle =-90]{graphics/gamescreen3.png}
+		 
+
+
+%% Obsah elektronických dat. Poslední příloha. Upravte podle vlastní
+%% práce!
+\section{Obsah elektronických dat} \label{sec:ObsahData}
+
+Na samotném konci textu práce je uveden stručný popis obsahu
+elektronických dat odevzdaných v systému katedry informatiky spolu s
+textem. Tato data jsou nedílnou součástí práce a tvoří (datovou)
+přílohu textu práce. Povinné položky struktury dat jsou:
+
+\begin{description}
+
+\item[\texttt{text/}] \hfill \\
+  Adresář s textem práce ve formátu PDF, vytvořený s~použitím
+  závazného stylu KI PřF UP v~Olomouci pro závěrečné práce, včetně
+  všech (textových) příloh, a~všechny soubory potřebné pro
+  bezproblémové vytvoření PDF dokumentu textu (případně v~ZIP
+  archivu), tj.~zdrojový text textu a příloh, vložené obrázky, apod.
+
+\item[\texttt{README.*}] \hfill \\
+  Textový soubor (s příponou např. \texttt{.txt}) s informacemi o
+  opakovatelném způsobu použití ostatních dat práce -- typicky plně
+  reprodukovatelný co nejúplnější funkční postup zprovoznění software
+  vytvořeného v~rámci práce, tzn. jeho případné instalace/nasazení a
+  spuštění, včetně uvedení všech požadavků pro bezproblémový provoz;
+  za zprovoznění software se nepovažuje zpřístupnění (např. po
+  Internetu) již někde zprovozněného software.
+
+\item[\texttt{*}] \hfill \\
+  Adresáře a soubory s veškerými ostatními autorskými daty práce
+  (případně v~ZIP archivu) -- typicky spustitelné a další soubory
+  software vytvořeného v rámci práce potřebné pro bezproblémový provoz
+  software, případně jeho instalační program, a kompletní zdrojové
+  texty software a další data nutná pro plně reprodukovatelné korektní
+  vytvoření spustitelných souborů.
+
+\end{description}
+
+Dále mohou data obsahovat například:
+
+\begin{itemize}
+
+%\item[\texttt{data/}] \hfill \\
+\item
+  ukázková a~testovací data použitá v~práci nebo pro potřeby posouzení
+  práce v rámci její obhajoby,
+
+%\item[\texttt{literature/}] \hfill \\
+\item
+  položky bibliografie v elektronické podobě, příp.~jiná relevantní literatura
+  a dokumentace vztahující se k~práci,
+
+%\item[\texttt{install/}] \hfill \\
+\item
+  cizí data (software) potřebná pro bezproblémové použití autorských
+  dat práce (software), která nejsou standardní součástí
+  předpokládaného (softwarového) vybavení uživatele.
+
+\end{itemize}
+
+U~veškerých cizích obsažených materiálů jejich
+zahrnutí dovolují podmínky pro jejich veřejné šíření nebo přiložený souhlas
+držitele práv k užití. Pro všechny použité (a~citované) materiály,
+u~kterých toto není splněno a~nejsou tak obsaženy, je uveden
+jejich zdroj, např.~webová adresa, v~bibliografii nebo textu práce
+nebo souboru \texttt{README.*}.
+
+%% -------------------------------------------------------------------
+
+
+
+
+%% Sazba volitelného seznamu zkratek, za přílohami.
+\printglossary
+
+Seznam zkratek:\\
+\\
+API -                                  \\
+AI ,z anglického slovního spojení Artificial intelligence                                   \\
+DL deep lerning                                  \\
+ChatGPT                                  \\
+HW                                  \\
+GUI                                  \\
+ML machine lerning                                  \\
+NN/ANN neuronova sit angg neural network                                   \\
+ID        \\
+OOP                     \\
+REL reinforsement lerning                                  \\
+reff  rozhotciz anglického referee                                  \\
+SW                                               \\
+UAT                                  \\
+
+
+%% Sazba povinné bibliografie, za přílohami (případně i za seznamem
+%% zkratek). Při použití BibLaTeXu použijte makro
+%% \printbibliography. jinak prostředí thebibliography. Ne obojí!
+
+%% Sazba i v textu necitovaných zdrojů, při použití
+%% BibLaTeXu. Volitelné.
+ %\nocite{*}
+ 
+%% Vlastní sazba bibliografie při použití BibLaTeXu.
+%\printbibliography
+
+%% Bibliografie, včetně sazby, při NEpoužití BibLaTeXu.
+ \renewcommand{\refname}{Seznam literatury}
+\begin{thebibliography}{9}
+ 
+	\bibitem{1} RYBIČKA, Jiří.
+	\emph{\LaTeX{} pro začátečníky}. 3. vydání.
+	Brno: Konvoj, 2003. 238 s. ISBN 80-7302-049-1.
+
+ 	\bibitem{2} robocup, Jiří.
+	\emph{\LaTeX{} pro začátečníky}. 3. vydání.
+	Brno: Konvoj, 2003. 238 s. ISBN 80-7302-049-1.
+
+ 	\bibitem{3} STEAM, Jiří.
+	\emph{\LaTeX{} pro začátečníky}. 3. vydání.
+	Brno: Konvoj, 2003. 238 s. ISBN 80-7302-049-1.
+
+ 	\bibitem{4} wiki python, Jiří.
+	\emph{\LaTeX{} pro začátečníky}. 3. vydání.
+	Brno: Konvoj, 2003. 238 s. ISBN 80-7302-049-1.
+
+ 	\bibitem{5} computerfiklie youtube python, Jiří.
+	\emph{\LaTeX{} pro začátečníky}. 3. vydání.
+	Brno: Konvoj, 2003. 238 s. ISBN 80-7302-049-1.
+
+ 
+
+ 	\bibitem{6} ibm youtube python, Jiří.
+	\emph{\LaTeX{} pro začátečníky}. 3. vydání.
+	Brno: Konvoj, 2003. 238 s. ISBN 80-7302-049-1.
+
+ 	\bibitem{7} MIT yt re lenrning python, Jiří.
+	\emph{\LaTeX{} pro začátečníky}. 3. vydání.
+	Brno: Konvoj, 2003. 238 s. ISBN 80-7302-049-1.
+
+
+ 	\bibitem{19}  k backpropagation  3ble1brown    ing python, Jiří.
+	\emph{\LaTeX{} pro začátečníky}. 3. vydání.
+	Brno: Konvoj, 2003. 238 s. ISBN 80-7302-049-1.
+
+ 	\bibitem{20} istqb yt re lenrning python, Jiří.
+	\emph{\LaTeX{} pro začátečníky}. 3. vydání.
+	Brno: Konvoj, 2003. 238 s. ISBN 80-7302-049-1.
+
+
+ 	\bibitem{20} XIT  enrning python, Jiří.
+	\emph{\LaTeX{} pro začátečníky}.https://www.ibm.com/topics/explainable-ai
+
+\end{thebibliography}
+ 
+ 
+
+%% Sazba volitelného rejstříku, za bibliografií.
+\printindex
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
